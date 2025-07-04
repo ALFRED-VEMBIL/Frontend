@@ -1,17 +1,23 @@
-import WidgetSidebar from '@/components/widgets/Sidebar'
-import Navbar from '@/components/widgets/Navbar';
+"use client";
+
+import { useState, createContext } from "react";
+import WidgetSidebar from "@/components/widgets/Sidebar";
+import Navbar from "@/components/widgets/Navbar";
+
+export const SelectedBlogContext = createContext(null);
 
 export default function WidgetLayout({ children }) {
-  return (
-    <div className="flex w-full h-full">
-        {/* Left column – fixed 250px */}
-        <WidgetSidebar />
+  const [selectedBlog, setSelectedBlog] = useState(null);
 
-        {/* Right column – take the rest */}
-        <div className="flex-1 h-[100vh] overflow-auto">
-            <Navbar />
-            {children}
+  return (
+    <SelectedBlogContext.Provider value={{ selectedBlog, setSelectedBlog }}>
+      <div className="flex w-full h-full">
+        <WidgetSidebar />
+        <div className="flex-1 h-screen overflow-auto">
+          <Navbar onSelectBlog={setSelectedBlog} />
+          {children}
         </div>
-    </div>
+      </div>
+    </SelectedBlogContext.Provider>
   );
 }

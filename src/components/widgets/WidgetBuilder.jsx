@@ -1,5 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useContext } from "react";
+import { SelectedBlogContext } from "@/app/widgets/layout.js";
+
 import {
   Save,
   RotateCcw,
@@ -18,7 +21,69 @@ const Section = ({ title, children }) => (
 );
 
 const WidgetBuilder = () => {
-  const [viewType, setViewType] = useState('list');
+const { selectedBlog } = useContext(SelectedBlogContext);
+const [viewType, setViewType] = useState('magazine');
+const [magazineStyle, setMagazineStyle] = useState('small');
+const [widthMode, setWidthMode] = useState("responsive");
+const [widthValue, setWidthValue] = useState(350);
+
+const [heightMode, setHeightMode] = useState("pixels");
+const [heightValue, setHeightValue] = useState(510);
+
+const [autoScroll, setAutoScroll] = useState(false);
+
+const [speed, setSpeed] = useState(4);
+const previewRef = useRef(null);
+
+
+const [blogs, setBlogs] = useState([]);
+
+useEffect(() => {
+  if (selectedBlog) {
+    console.log("selectedBlog inside WidgetBuilder:", selectedBlog);
+    fetch(`http://localhost:8080/feedspotclone/search.php?id=${selectedBlog.id}`)
+
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Filtered blogs response:", data);
+        setBlogs(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching filtered blogs", err);
+      });
+  } else {
+    fetch("http://localhost:8080/feedspotclone/blogs.php")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("All blogs response:", data);
+        setBlogs(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching blogs", err);
+      });
+  }
+}, [selectedBlog]);
+
+
+
+useEffect(() => {
+  let intervalId;
+
+  if (autoScroll && previewRef.current) {
+    intervalId = setInterval(() => {
+      previewRef.current.scrollBy({
+        top: 1, // scroll 1px per interval
+        behavior: 'smooth'
+      });
+    }, 1000 / speed); // the higher the speed, the faster it scrolls
+  }
+
+  return () => clearInterval(intervalId);
+}, [autoScroll, speed]);
+
+
+
+
 
   const blogData = [
     {
@@ -34,7 +99,7 @@ const WidgetBuilder = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full p-4 bg-white max-h-screen overflow-auto">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full p-4 bg-white max-h-screen overflow-auto scrollbar-hide">
       {/* ─────────────── Left Column */}
       <div className="space-y-6 min-w-[300px]">
 
@@ -58,104 +123,268 @@ const WidgetBuilder = () => {
             </select>
           </div>
         </Section>
+{/* Following Views */}
+<Section
+  title={
+    <div className="flex justify-between items-center w-full">
+      <span>Following Views</span>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setViewType('magazine')}
+          className={`p-1.5 border rounded ${
+            viewType === 'magazine' ? 'bg-gray-200' : ''
+          }`}
+        >
+          <LayoutGrid size={16} />
+        </button>
+        <button
+          onClick={() => setViewType('list')}
+          className={`p-1.5 border rounded ${
+            viewType === 'list' ? 'bg-gray-200' : ''
+          }`}
+        >
+          <List size={16} />
+        </button>
+        <button
+          onClick={() => setViewType('grid')}
+          className={`p-1.5 border rounded ${
+            viewType === 'grid' ? 'bg-gray-200' : ''
+          }`}
+        >
+          <Rows3 size={16} />
+        </button>
+      </div>
+    </div>
+  }
+>
+  {/* Magazine style selector */}
+  {viewType === 'magazine' && (
+    <div className="flex justify-center items-center overflow-hidden mt-3">
+      <div className="flex gap-2">
+        <div
+          className={`
+            cursor-pointer
+            border-2
+            rounded
+            overflow-hidden
+            ${magazineStyle === 'small' ? 'border-blue-500' : 'border-gray-300'}
+          `}
+          onClick={() => setMagazineStyle('small')}
+        >
+          <img
+            src="https://www.feedspot.com/widgets/Assets/images/template_images/4.webp"
+            alt="small"
+            className="max-w-full max-h-80 object-contain"
+          />
+        </div>
+        <div
+          className={`
+            cursor-pointer
+            border-2
+            rounded
+            overflow-hidden
+            ${magazineStyle === 'large' ? 'border-blue-500' : 'border-gray-300'}
+          `}
+          onClick={() => setMagazineStyle('large')}
+        >
+          <img
+            src="https://www.feedspot.com/widgets/Assets/images/template_images/5.webp"
+            alt="large"
+            className="max-w-full max-h-80 object-contain"
+          />
+        </div>
+      </div>
+    </div>
+  )}
 
-        {/* Following Views */}
-        <Section title="Following Views">
-          {/* View Toggle Buttons */}
-          <div className="flex gap-2 mb-3 justify-end">
-            <button onClick={() => setViewType('list')} className={`p-1.5 border rounded ${viewType === 'list' ? 'bg-gray-200' : ''}`}><List size={16} /></button>
-            <button onClick={() => setViewType('compact')} className={`p-1.5 border rounded ${viewType === 'compact' ? 'bg-gray-200' : ''}`}><Rows3 size={16} /></button>
-            <button onClick={() => setViewType('grid')} className={`p-1.5 border rounded ${viewType === 'grid' ? 'bg-gray-200' : ''}`}><LayoutGrid size={16} /></button>
-          </div>
+  {/* List style selector */}
+  {viewType === 'list' && (
+    <div className="flex justify-center items-center overflow-hidden mt-3">
+      <div className="flex gap-2">
+        <div
+          className="cursor-pointer border-2 rounded overflow-hidden border-blue-500"
+        >
+          <img
+            src="https://www.feedspot.com/widgets/Assets/images/template_images/1.webp"
+            alt="list-style"
+            className="max-w-full max-h-80 object-contain"
+          />
+        </div>
+      </div>
+    </div>
+  )}
 
-          {/* Feed Items */}
-          <div className="space-y-4">
-            {[1, 2, 3].map((_, i) => (
-              <div key={i} className="flex gap-3 items-start">
-                <div className="w-16 h-16 bg-gray-200 rounded overflow-hidden">
-                  <img
-                    src={`https://via.placeholder.com/64x64?text=Img${i + 1}`}
-                    alt="placeholder"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-blue-700 leading-snug hover:underline cursor-pointer">
-                    Dummy Article Title Goes Here {i + 1}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    By Dummy Author - Jun {21 + i}, 2019
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Section>
+  {/* Grid style selector */}
+  {viewType === 'grid' && (
+    <div className="flex justify-center items-center overflow-hidden mt-3">
+      <div className="flex gap-2">
+        <div
+          className="cursor-pointer border-2 rounded overflow-hidden border-blue-500"
+        >
+          <img
+            src="https://www.feedspot.com/widgets/Assets/images/template_images/6.webp"
+            alt="grid-style"
+            className="max-w-full max-h-80 object-contain"
+          />
+        </div>
+      </div>
+    </div>
+  )}
+</Section>
 
-        {/* General Settings (restored fully) */}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+
+        {/* General Settings */}
         <Section title="General">
           <div className="border border-gray-300 rounded bg-white text-sm">
-            <div className="px-3 py-2 font-semibold bg-gray-100 border-b border-gray-300">
-              General
-            </div>
+         
             <div className="p-4 space-y-4">
               {/* Width */}
-              <div>
-                <label className="block font-medium mb-1">Width</label>
+             
+              <label className="block font-medium mb-1">Width</label>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2">
-                    <input type="radio" name="width" />
+                    <input
+                      type="radio"
+                      name="width"
+                      checked={widthMode === "pixels"}
+                      onChange={() => setWidthMode("pixels")}
+                    />
                     <span>In Pixels</span>
                   </label>
                   <label className="flex items-center gap-2">
-                    <input type="radio" name="width" defaultChecked />
+                    <input
+                      type="radio"
+                      name="width"
+                      checked={widthMode === "responsive"}
+                      onChange={() => setWidthMode("responsive")}
+                    />
                     <span>Responsive (Mobile friendly)</span>
                   </label>
-                  <div className="flex items-center gap-2">
-                    <button className="bg-gray-200 rounded px-2">−</button>
-                    <input type="text" className="w-20 text-center border rounded py-0.5" value="350" readOnly />
-                    <button className="bg-gray-200 rounded px-2">+</button>
-                  </div>
+                  {widthMode === "pixels" && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setWidthValue((prev) => prev - 10)}
+                        className="bg-gray-200 rounded px-2"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="text"
+                        className="w-20 text-center border rounded py-0.5"
+                        value={widthValue}
+                        readOnly
+                      />
+                      <button
+                        onClick={() => setWidthValue((prev) => prev + 10)}
+                        className="bg-gray-200 rounded px-2"
+                      >
+                        +
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </div>
+
+             
 
               {/* Height */}
-              <div>
-                <label className="block font-medium mb-1">Height</label>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="height" defaultChecked />
-                    <span>In Pixels</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="height" />
-                    <span>Posts</span>
-                  </label>
+              <label className="block font-medium mb-1">Height</label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="height"
+                    checked={heightMode === "pixels"}
+                    onChange={() => setHeightMode("pixels")}
+                  />
+                  <span>In Pixels</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="height"
+                    checked={heightMode === "posts"}
+                    onChange={() => setHeightMode("posts")}
+                  />
+                  <span>Posts</span>
+                </label>
+                {heightMode === "pixels" && (
                   <div className="flex items-center gap-2">
-                    <button className="bg-gray-200 rounded px-2">−</button>
-                    <input type="text" className="w-20 text-center border rounded py-0.5" value="510" readOnly />
-                    <button className="bg-gray-200 rounded px-2">+</button>
+                    <button
+                      onClick={() => setHeightValue((prev) => prev - 10)}
+                      className="bg-gray-200 rounded px-2"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="text"
+                      className="w-20 text-center border rounded py-0.5"
+                      value={heightValue}
+                      readOnly
+                    />
+                    <button
+                      onClick={() => setHeightValue((prev) => prev + 10)}
+                      className="bg-gray-200 rounded px-2"
+                    >
+                      +
+                    </button>
                   </div>
-                </div>
+                )}
               </div>
+
 
               {/* Autoscroll */}
               <div className="flex items-center justify-between">
                 <span>Autoscroll</span>
-                <div className="bg-blue-600 w-10 h-5 rounded-full flex items-center px-1">
-                  <div className="bg-white w-4 h-4 rounded-full" />
+                <div
+                  className={`w-10 h-5 rounded-full flex items-center px-1 cursor-pointer ${
+                    autoScroll ? "bg-blue-600" : "bg-gray-400"
+                  }`}
+                  onClick={() => setAutoScroll((prev) => !prev)}
+                >
+                  <div
+                    className={`bg-white w-4 h-4 rounded-full transition-transform ${
+                      autoScroll ? "translate-x-5" : ""
+                    }`}
+                  />
                 </div>
               </div>
+
 
               {/* Speed */}
               <div>
                 <label className="block font-medium mb-1">Speed</label>
                 <div className="flex items-center gap-2">
-                  <button className="bg-gray-200 rounded px-2">−</button>
-                  <input type="text" className="w-16 text-center border rounded py-0.5" value="4" readOnly />
-                  <button className="bg-gray-200 rounded px-2">+</button>
+                  <button
+                    onClick={() => setSpeed((prev) => Math.max(prev - 1, 1))}
+                    className="bg-gray-200 rounded px-2"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="text"
+                    className="w-16 text-center border rounded py-0.5"
+                    value={speed}
+                    readOnly
+                  />
+                  <button
+                    onClick={() => setSpeed((prev) => prev + 1)}
+                    className="bg-gray-200 rounded px-2"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
+
 
               {/* Open links */}
               <div>
@@ -221,7 +450,7 @@ const WidgetBuilder = () => {
               <div>
                 <label className="block font-medium mb-1">Padding</label>
                 <div className="flex items-center gap-2">
-                  <button className="bg-gray-200 rounded px-2">−</button>
+                  <button className="bg-gray-200 rounded px-2">-</button>
                   <input type="text" className="w-16 text-center border rounded py-0.5" value="5" readOnly />
                   <button className="bg-gray-200 rounded px-2">+</button>
                 </div>
@@ -231,7 +460,7 @@ const WidgetBuilder = () => {
               <div>
                 <label className="block font-medium mb-1">Space Between Items</label>
                 <div className="flex items-center gap-2">
-                  <button className="bg-gray-200 rounded px-2">−</button>
+                  <button className="bg-gray-200 rounded px-2">-</button>
                   <input type="text" className="w-16 text-center border rounded py-0.5" value="10" readOnly />
                   <button className="bg-gray-200 rounded px-2">+</button>
                 </div>
@@ -254,6 +483,16 @@ const WidgetBuilder = () => {
         </Section>
       </div>
 
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+
+
       {/* ─────────────── Right Column */}
       <div className="sticky top-4 h-fit flex-1 min-w-[300px] space-y-4 self-start">
         <input
@@ -272,40 +511,117 @@ const WidgetBuilder = () => {
           </button>
         </div>
 
-        {/* Mountain Bike Blogs (Live Preview) */}
-        <div className="border border-gray-300 rounded bg-white overflow-hidden">
-          <div className="px-3 py-2 text-sm font-semibold bg-gray-100 border-b border-gray-300">
-            Mountain Bike Blogs
-          </div>
-          <div className={`p-3 text-sm text-gray-700 ${
-            viewType === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-3' : 'space-y-3'
-          }`}>
-            {blogData.map((item, idx) => {
-              if (viewType === 'compact') {
-                return (
-                  <div key={idx} className="border-b pb-2">
-                    <p className="font-medium">{item.title}</p>
-                    <p className="text-xs text-gray-500">{item.author} – {item.date}</p>
-                  </div>
-                );
-              } else if (viewType === 'grid') {
-                return (
-                  <div key={idx} className="border border-gray-200 rounded p-3 bg-gray-50">
-                    <p className="font-medium mb-1">{item.title}</p>
-                    <p className="text-xs text-gray-500">{item.author} – {item.date}</p>
-                  </div>
-                );
-              } else {
-                return (
-                  <div key={idx} className="flex flex-col border border-gray-200 rounded p-3 bg-gray-50">
-                    <p className="font-medium mb-1">{item.title}</p>
-                    <p className="text-xs text-gray-500">{item.author} – {item.date}</p>
-                  </div>
-                );
-              }
-            })}
+        <div
+  ref={previewRef}
+  className="border border-gray-300 rounded p-3 text-sm text-gray-700 space-y-3 overflow-auto scrollbar-hide"
+  style={{
+    height: heightMode === "pixels" ? `${heightValue}px` : undefined,
+    width: widthMode === "pixels" ? `${widthValue}px` : "100%",
+  }}
+>
+  {/* magazine preview */}
+  {viewType === "magazine" && magazineStyle === "small" && (
+    <div className="space-y-4">
+      {blogs.map((blog) => (
+        <div key={blog.id} className="flex gap-3 items-start">
+          <img
+            src={blog.image}
+            alt={blog.title}
+            className="w-24 h-20 object-cover rounded"
+          />
+          <div>
+            <a
+              href={blog.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-blue-700 hover:underline cursor-pointer"
+            >
+              {blog.title}
+            </a>
+            <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
           </div>
         </div>
+      ))}
+    </div>
+  )}
+
+  {viewType === "magazine" && magazineStyle === "large" && (
+    <div className="space-y-4">
+      {blogs.map((blog) => (
+        <div key={blog.id} className="border rounded overflow-hidden">
+          <img
+            src={blog.image}
+            alt={blog.title}
+            className="w-full h-40 object-cover"
+          />
+          <div className="p-2">
+            <a
+              href={blog.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-blue-700 hover:underline cursor-pointer"
+            >
+              {blog.title}
+            </a>
+            <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* list preview */}
+  {viewType === "list" && (
+    <div className="space-y-4">
+      {blogs.map((blog) => (
+        <div key={blog.id} className="flex gap-3 items-start border-b pb-2">
+          <img
+            src={blog.image}
+            alt={blog.title}
+            className="w-20 h-20 object-cover rounded"
+          />
+          <div>
+            <a
+              href={blog.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium hover:underline"
+            >
+              {blog.title}
+            </a>
+            <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* grid preview */}
+  {viewType === "grid" && (
+    <div className="grid grid-cols-2 gap-3">
+      {blogs.map((blog) => (
+        <div key={blog.id} className="border rounded p-2 bg-gray-50">
+          <img
+            src={blog.image}
+            alt={blog.title}
+            className="w-full h-24 object-cover rounded mb-1"
+          />
+          <a
+            href={blog.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium hover:underline"
+          >
+            {blog.title}
+          </a>
+          <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+
       </div>
     </div>
   );

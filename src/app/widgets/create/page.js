@@ -1,14 +1,13 @@
-import React from 'react';
-import HeadSection from '@/components/widgets/Header';
-import WidgetBuilder from '@/components/widgets/WidgetBuilder';
+"use client";
 
-function WidgetEditor() {
+import HeadSection from "@/components/widgets/Header";
+import WidgetBuilder from "@/components/widgets/WidgetBuilder";
+
+export default function CreatePage() {
   return (
     <>
-        <HeadSection />
-        <WidgetBuilder />
+      <HeadSection />
+      <WidgetBuilder />
     </>
-  )
+  );
 }
-
-export default WidgetEditor;

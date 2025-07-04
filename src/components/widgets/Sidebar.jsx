@@ -18,8 +18,8 @@ import { useActivePath } from '@/hooks/useActivePath';
 
 const navItems = [
   { label: "Feedspot Home", icon: Home, path: '#' },
-  { label: "Widget Home", icon: Widget, path: '#' },
-  { label: "My Widgets", icon: Layers, path: '#' },
+  { label: "Widget Home", icon: Widget, path: '/widgets/create' },
+  { label: "My Widgets", icon: Layers, path: '/widgets' },
   { label: "Widget Catalog", icon: Bookmark, path: '#' },
   { label: "Support", icon: HelpCircle, path: '#' },
   { label: "Widget Examples", icon: Code, path: '#' },
@@ -55,7 +55,7 @@ function WidgetSidebar() {
       <Link
         href={path}
         className={`flex items-center gap-1 px-5 py-1 text-sm font-medium hover:bg-zinc-600 transition-colors ${
-          isActive(path) ? "bg-gray-700" : ""
+          isActive(path) ? "bg-zinc-600 " : ""
         }`}
       >
         <Icon size={18} className="shrink-0" />
