@@ -512,13 +512,13 @@ useEffect(() => {
         </div>
 
         <div
-  ref={previewRef}
-  className="border border-gray-300 rounded p-3 text-sm text-gray-700 space-y-3 overflow-auto scrollbar-hide"
-  style={{
-    height: heightMode === "pixels" ? `${heightValue}px` : undefined,
-    width: widthMode === "pixels" ? `${widthValue}px` : "100%",
-  }}
->
+          ref={previewRef}
+          className="border border-gray-300 rounded p-3 text-sm text-gray-700 space-y-3 overflow-auto scrollbar-hide"
+          style={{
+            height: heightMode === "pixels" ? `${heightValue}px` : undefined,
+            width: widthMode === "pixels" ? `${widthValue}px` : "100%",
+          }}
+        >
   {/* magazine preview */}
   {viewType === "magazine" && magazineStyle === "small" && (
     <div className="space-y-4">

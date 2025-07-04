@@ -16,7 +16,7 @@ const Navbar = ({ onSelectBlog }) => {
           `http://localhost:8080/feedspotclone/search.php?q=${encodeURIComponent(query)}`
         );
         const data = await res.json();
-        console.log("Fetched data:", data);
+       
         setSuggestions(data);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -44,7 +44,7 @@ const Navbar = ({ onSelectBlog }) => {
                 key={sug.id}
                 className="px-3 py-1 hover:bg-gray-100 cursor-pointer"
                 onClick={() => {
-                  onSelectBlog(sug);      // pass whole object for preview
+                  onSelectBlog(sug);      // pass whole object for preview 
                   setQuery(sug.title);    // set text field only with title
                   setSuggestions([]);     // close the dropdown
                 }}
