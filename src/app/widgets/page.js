@@ -1,11 +1,12 @@
-import { Sidebar } from 'lucide-react';
+import WidgetHeader from '@/components/widgets/MyWidgets';
+
 import React from 'react';
 
 
 function WidgetEditor() {
   return (
     <>
-        
+        <WidgetHeader/>
     </>
   )
 }

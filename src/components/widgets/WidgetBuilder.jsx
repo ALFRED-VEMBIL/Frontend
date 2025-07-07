@@ -2,6 +2,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useContext } from "react";
 import { SelectedBlogContext } from "@/app/widgets/layout.js";
+import { useSearchParams, useRouter } from "next/navigation";
+
 
 import {
   Save,
@@ -9,7 +11,13 @@ import {
   List,
   LayoutGrid,
   Rows3,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
 } from 'lucide-react';
+
+
 
 const Section = ({ title, children }) => (
   <div className="border border-gray-200 rounded bg-white">
@@ -32,11 +40,78 @@ const [heightValue, setHeightValue] = useState(510);
 
 const [autoScroll, setAutoScroll] = useState(false);
 
+const [widgetName, setWidgetName] = useState("");
+
+
 const [speed, setSpeed] = useState(4);
 const previewRef = useRef(null);
 
+const searchParams = useSearchParams();
+const router = useRouter();
+const editId = searchParams.get("id");
 
 const [blogs, setBlogs] = useState([]);
+const [fontStyle, setFontStyle] = useState("Arial, Helvetica, sans-serif");
+const [textAlign, setTextAlign] = useState("left");
+const [borderEnabled, setBorderEnabled] = useState(true);
+
+const [borderColor, setBorderColor] = useState('#d61445');
+const [cornerStyle, setCornerStyle] = useState('rounded'); // 'rounded' or 'square'
+const [customCSS, setCustomCSS] = useState('');
+const [padding, setPadding] = useState(5);
+const [spacing, setSpacing] = useState(10);
+const [showDivider, setShowDivider] = useState(false);
+
+
+const handleSave = async () => {
+  if (!selectedBlog) {
+    alert("❌ Please select a blog to get its feed URL");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("widget_name", widgetName);
+  formData.append("feed_url", selectedBlog.url);
+  formData.append("layout", viewType);
+  formData.append("sublayout", magazineStyle);
+  formData.append("width_mode", widthMode);
+  formData.append("width_value", widthValue);
+  formData.append("height_mode", heightMode);
+  formData.append("height_value", heightValue);
+
+  try {
+    let response;
+    if (editId) {
+      formData.append("id", editId); // pass the ID for update
+      response = await fetch("http://localhost:8080/feedspotclone/edit.php", {
+        method: "POST",
+        body: formData,
+      });
+    } else {
+      response = await fetch("http://localhost:8080/feedspotclone/saveWidgets.php", {
+        method: "POST",
+        body: formData,
+      });
+    }
+
+    const data = await response.json();
+    console.log("Saved/Updated widget response:", data);
+
+    if (data.success) {
+      alert(editId ? "✅ Widget updated!" : "✅ Widget saved!");
+      router.push("/widgets"); // or wherever you want to redirect
+    } else {
+      alert("❌ Failed: " + data.error);
+    }
+  } catch (err) {
+    console.error("Fetch error:", err);
+    alert("❌ Could not save widget.");
+  }
+};
+
+
+
+
 
 useEffect(() => {
   if (selectedBlog) {
@@ -64,6 +139,29 @@ useEffect(() => {
   }
 }, [selectedBlog]);
 
+useEffect(() => {
+  if (editId) {
+    fetch(`http://localhost:8080/feedspotclone/getWidgetById.php?id=${editId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const w = data.data;
+          setWidgetName(w.widget_name);
+          setViewType(w.layout);
+          setMagazineStyle(w.sublayout);
+          setWidthMode(w.width_mode);
+          setWidthValue(Number(w.width_value));
+          setHeightMode(w.height_mode);
+          setHeightValue(Number(w.height_value));
+        } else {
+          alert("Failed to load widget: " + data.error);
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching widget", err);
+      });
+  }
+}, [editId]);
 
 
 useEffect(() => {
@@ -170,7 +268,7 @@ useEffect(() => {
             ${magazineStyle === 'small' ? 'border-blue-500' : 'border-gray-300'}
           `}
           onClick={() => setMagazineStyle('small')}
-        >
+        > 
           <img
             src="https://www.feedspot.com/widgets/Assets/images/template_images/4.webp"
             alt="small"
@@ -243,245 +341,246 @@ useEffect(() => {
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
 
-        {/* General Settings */}
-        <Section title="General">
-          <div className="border border-gray-300 rounded bg-white text-sm">
-         
-            <div className="p-4 space-y-4">
-              {/* Width */}
-             
-              <label className="block font-medium mb-1">Width</label>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="width"
-                      checked={widthMode === "pixels"}
-                      onChange={() => setWidthMode("pixels")}
-                    />
-                    <span>In Pixels</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="width"
-                      checked={widthMode === "responsive"}
-                      onChange={() => setWidthMode("responsive")}
-                    />
-                    <span>Responsive (Mobile friendly)</span>
-                  </label>
-                  {widthMode === "pixels" && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setWidthValue((prev) => prev - 10)}
-                        className="bg-gray-200 rounded px-2"
-                      >
-                        -
-                      </button>
-                      <input
-                        type="text"
-                        className="w-20 text-center border rounded py-0.5"
-                        value={widthValue}
-                        readOnly
-                      />
-                      <button
-                        onClick={() => setWidthValue((prev) => prev + 10)}
-                        className="bg-gray-200 rounded px-2"
-                      >
-                        +
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-             
-
-              {/* Height */}
-              <label className="block font-medium mb-1">Height</label>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="height"
-                    checked={heightMode === "pixels"}
-                    onChange={() => setHeightMode("pixels")}
-                  />
-                  <span>In Pixels</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="height"
-                    checked={heightMode === "posts"}
-                    onChange={() => setHeightMode("posts")}
-                  />
-                  <span>Posts</span>
-                </label>
-                {heightMode === "pixels" && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setHeightValue((prev) => prev - 10)}
-                      className="bg-gray-200 rounded px-2"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="text"
-                      className="w-20 text-center border rounded py-0.5"
-                      value={heightValue}
-                      readOnly
-                    />
-                    <button
-                      onClick={() => setHeightValue((prev) => prev + 10)}
-                      className="bg-gray-200 rounded px-2"
-                    >
-                      +
-                    </button>
-                  </div>
-                )}
-              </div>
-
-
-              {/* Autoscroll */}
-              <div className="flex items-center justify-between">
-                <span>Autoscroll</span>
-                <div
-                  className={`w-10 h-5 rounded-full flex items-center px-1 cursor-pointer ${
-                    autoScroll ? "bg-blue-600" : "bg-gray-400"
-                  }`}
-                  onClick={() => setAutoScroll((prev) => !prev)}
-                >
-                  <div
-                    className={`bg-white w-4 h-4 rounded-full transition-transform ${
-                      autoScroll ? "translate-x-5" : ""
-                    }`}
-                  />
-                </div>
-              </div>
-
-
-              {/* Speed */}
-              <div>
-                <label className="block font-medium mb-1">Speed</label>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setSpeed((prev) => Math.max(prev - 1, 1))}
-                    className="bg-gray-200 rounded px-2"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="text"
-                    className="w-16 text-center border rounded py-0.5"
-                    value={speed}
-                    readOnly
-                  />
-                  <button
-                    onClick={() => setSpeed((prev) => prev + 1)}
-                    className="bg-gray-200 rounded px-2"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-
-              {/* Open links */}
-              <div>
-                <label className="block font-medium mb-1">Open links</label>
-                <select className="w-full border rounded px-2 py-1">
-                  <option>New window</option>
-                  <option>Same tab</option>
-                </select>
-              </div>
-
-              {/* Font style */}
-              <div>
-                <label className="block font-medium mb-1">Font Style</label>
-                <select className="w-full border rounded px-2 py-1">
-                  <option>Arial, Helvetica, sans-serif</option>
-                  <option>Georgia, serif</option>
-                </select>
-              </div>
-
-              {/* Text alignment */}
-              <div>
-                <label className="block font-medium mb-1">Text alignment</label>
-                <div className="flex gap-2">
-                  <button className="bg-blue-600 text-white w-8 h-8 rounded-sm" />
-                  <button className="bg-gray-300 w-8 h-8 rounded-sm" />
-                  <button className="bg-gray-300 w-8 h-8 rounded-sm" />
-                </div>
-              </div>
-
-              {/* Border toggle */}
-              <div className="flex items-center justify-between">
-                <span>Border</span>
-                <div className="bg-blue-600 w-10 h-5 rounded-full flex items-center px-1">
-                  <div className="bg-white w-4 h-4 rounded-full" />
-                </div>
-              </div>
-
-              {/* Border Color */}
-              <div>
-                <label className="block font-medium mb-1">Border color</label>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gray-300 border rounded" />
-                  <input type="text" value="#dbdbdb" className="border rounded px-2 py-0.5" readOnly />
-                </div>
-              </div>
-
-              {/* Corner */}
-              <div>
-                <label className="block font-medium mb-1">Corner</label>
-                <div className="flex gap-2">
-                  <button className="bg-gray-300 px-4 py-1 rounded-sm">Square</button>
-                  <button className="border px-4 py-1 rounded">Rounded</button>
-                </div>
-              </div>
-
-              {/* CSS Link */}
-              <div>
-                <label className="block font-medium mb-1">Custom CSS link</label>
-                <input type="text" className="w-full border rounded px-2 py-1" placeholder="https://example.com/styles.css" />
-              </div>
-
-              {/* Padding */}
-              <div>
-                <label className="block font-medium mb-1">Padding</label>
-                <div className="flex items-center gap-2">
-                  <button className="bg-gray-200 rounded px-2">-</button>
-                  <input type="text" className="w-16 text-center border rounded py-0.5" value="5" readOnly />
-                  <button className="bg-gray-200 rounded px-2">+</button>
-                </div>
-              </div>
-
-              {/* Space Between Items */}
-              <div>
-                <label className="block font-medium mb-1">Space Between Items</label>
-                <div className="flex items-center gap-2">
-                  <button className="bg-gray-200 rounded px-2">-</button>
-                  <input type="text" className="w-16 text-center border rounded py-0.5" value="10" readOnly />
-                  <button className="bg-gray-200 rounded px-2">+</button>
-                </div>
-              </div>
-
-              {/* Divider toggle */}
-              <div className="flex items-center justify-between">
-                <span>Divider B/W Items</span>
-                <div className="bg-gray-400 w-10 h-5 rounded-full flex items-end px-1">
-                  <div className="bg-white w-4 h-4 rounded-full" />
-                </div>
-              </div>
-
-              {/* Advanced Settings */}
-              <button className="w-full bg-blue-600 text-white py-2 rounded mt-4 text-center">
-                Advanced Settings ▼
-              </button>
-            </div>
-          </div>
-        </Section>
+<Section title="General">
+  <div className="bg-white text-sm space-y-5 px-4 py-2">
+    {/* Width */}
+    <div className="flex justify-between items-start">
+      <div className="w-1/2">
+        <label className="font-semibold block mb-2">Width</label>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="width"
+              checked={widthMode === "pixels"}
+              onChange={() => setWidthMode("pixels")}
+            />
+            <span>In Pixels</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="width"
+              checked={widthMode === "responsive"}
+              onChange={() => setWidthMode("responsive")}
+            />
+            <span>Responsive (Mobile friendly)</span>
+          </label>
+        </div>
       </div>
+
+      {/* Pixel control */}
+      {widthMode === "pixels" && (
+        <div className="flex items-center gap-2">
+          <button onClick={() => setWidthValue((prev) => prev - 10)} className="bg-gray-400 text-white rounded-full w-6 h-6">-</button>
+          <input
+            type="text"
+            className="w-32 text-center py-1 "
+            value={widthValue}
+            readOnly
+          />
+          <button onClick={() => setWidthValue((prev) => prev + 10)} className="bg-cyan-700 text-white rounded-full w-6 h-6">+</button>
+        </div>
+      )}
+    </div>
+
+    {/* Height */}
+    <div className="flex justify-between items-start">
+      <div className="w-1/2">
+        <label className="font- block mb-2">Height</label>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="height"
+              checked={heightMode === "pixels"}
+              onChange={() => setHeightMode("pixels")}
+            />
+            <span>In Pixels</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="height"
+              checked={heightMode === "posts"}
+              onChange={() => setHeightMode("posts")}
+            />
+            <span>Posts</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {heightMode === "pixels" && (
+          <div className="flex items-center gap-2">
+            <button onClick={() => setHeightValue((prev) => prev - 10)} className="bg-gray-400 text-white rounded-full w-6 h-6">-</button>
+            <input
+              type="text"
+              className="w-32 text-center  py-1 "
+              value={heightValue}
+              readOnly
+            />
+            <button onClick={() => setHeightValue((prev) => prev + 10)} className="bg-cyan-700 text-white rounded-full w-6 h-6">+</button>
+          </div>
+        )}
+
+        
+      </div>
+    </div>
+
+    {/* Autoscroll */}
+    <div className="flex justify-between items-center">
+      <label className="font-normal w-1/2">Autoscroll</label>
+      <div
+        className={`w-15 h-7 rounded-full flex items-center px-1 cursor-pointer transition-all ease-in-out duration-500 delay-75 ${
+          autoScroll ? "bg-cyan-700" : "bg-gray-400"
+        }`}
+        onClick={() => setAutoScroll((prev) => !prev)}
+      >
+        <div
+          className={`bg-white w-5 h-5 rounded-full transition-all ease-in-out duration-500 delay-75 ${
+            autoScroll ? "translate-x-8" : ""
+          }`}
+        />
+      </div>
+    </div>
+    {/* Font Style */}
+    <div className="flex justify-between items-center">
+      <label className="font-normal w-1/2">Font Style</label>
+      <select
+        value={fontStyle}
+        onChange={(e) => setFontStyle(e.target.value)}
+        className="w-1/2 border rounded px-2 py-1"
+      >
+        <option value="Arial, Helvetica, sans-serif">Arial, Helvetica, sans-serif</option>
+        <option value="Georgia, serif">Georgia, serif</option>
+        <option value="Tahoma, sans-serif">Tahoma, sans-serif</option>
+        <option value="Courier New, monospace">Courier New, monospace</option>
+      </select>
+    </div>
+{/* Text Alignment */}
+<div className="flex justify-between items-center">
+  <label className="font-normal w-1/2">Text alignment</label>
+  <div className="flex gap-2">
+    <button
+      onClick={() => setTextAlign("left")}
+      className={`w-8 h-8 flex items-center justify-center rounded ${
+        textAlign === "left" ? "bg-cyan-700 text-white" : "bg-gray-400 text-white"
+      }`}
+    >
+      <AlignLeft size={16} />
+    </button>
+    <button
+      onClick={() => setTextAlign("center")}
+      className={`w-8 h-8 flex items-center justify-center rounded ${
+        textAlign === "center" ? "bg-cyan-700 text-white" : "bg-gray-400 text-white"
+      }`}
+    >
+      <AlignCenter size={16} />
+    </button>
+    <button
+      onClick={() => setTextAlign("right")}
+      className={`w-8 h-8 flex items-center justify-center rounded ${
+        textAlign === "right" ? "bg-cyan-700 text-white" : "bg-gray-400 text-white"
+      }`}
+    >
+      <AlignRight size={16} />
+    </button>
+    <button
+      onClick={() => setTextAlign("justify")}
+      className={`w-8 h-8 flex items-center justify-center rounded ${
+        textAlign === "justify" ? "bg-cyan-700 text-white" : "bg-gray-400 text-white"
+      }`}
+    >
+      <AlignJustify size={16} />
+    </button>
+  </div>
+</div>
+
+
+    {/* Border Toggle */}
+    <div className="flex justify-between items-center">
+      <label className="font-normal w-1/2">Border</label>
+      <div
+        className={`w-15 h-7 rounded-full flex items-center px-1 cursor-pointer transition-all ease-in-out duration-500 delay-75 ${
+          borderEnabled ? "bg-cyan-700" : "bg-gray-400"
+        }`}
+        onClick={() => setBorderEnabled((prev) => !prev)}
+      >
+        <div
+          className={`bg-white w-5 h-5 rounded-full transition-all ease-in-out duration-500 delay-75 ${
+            borderEnabled ? "translate-x-8 " : ""
+          }`}
+        />
+      </div>
+    </div>
+ {/* Border Color */}
+    <div className="flex justify-between items-center">
+      <label className="w-1/2 font-normal">Border color</label>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={borderColor}
+          onChange={(e) => setBorderColor(e.target.value)}
+        />
+        <input
+          type="text"
+          value={borderColor}
+          onChange={(e) => setBorderColor(e.target.value)}
+          className="border px-2 py-1 text-sm rounded w-28"
+        />
+      </div>
+    </div>
+
+    {/* Corner Style */}
+    <div className="flex justify-between items-center">
+      <label className="w-1/2 font-normal">Corner</label>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setCornerStyle('square')}
+          className={ ` border  border-cyan-800 px-3 py-1 rounded ${cornerStyle === 'square' ? 'bg-cyan-700 text-white' : ''}`}
+        >
+          Square
+        </button>
+        <button
+          onClick={() => setCornerStyle('rounded')}
+          className={`border px-3 py-1 rounded ${cornerStyle === 'rounded' ? 'bg-cyan-700 text-white' : ''}`}
+        >
+          Rounded
+        </button>
+      </div>
+    </div>
+
+
+
+    {/* Padding */}
+    <div className="flex justify-between items-center">
+      <label className="w-1/2 font-normal">Padding</label>
+      <div className="flex items-center gap-2">
+        <button onClick={() => setPadding(p => Math.max(0, p - 1))} className="bg-gray-400 text-white rounded-full w-6 h-6">-</button>
+        <div className="w-32 text-center  py-1 "><span>{padding}</span></div>
+        
+        <button onClick={() => setPadding(p => p + 1)} className="bg-cyan-700 text-white rounded-full w-6 h-6">+</button>
+      </div>
+    </div>
+
+    {/* Space Between Items */}
+    <div className="flex justify-between items-start">
+      <label className="w-1/2 font-block mb-2">Space Between Items</label>
+      <div className='space-y-3'> 
+        <div className="flex items-center space-y-3 gap-2">
+        <button onClick={() => setSpacing(s => Math.max(0, s - 1))} className="bg-gray-400 text-white rounded-full w-6 h-6">-</button>
+         <div className="w-32 text-center   py-1 "><span>{spacing}</span></div>
+        <button onClick={() => setSpacing(s => s + 1)} className="bg-cyan-700 text-white rounded-full w-6 h-6">+</button>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</Section>
+
+</div>
 
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
@@ -496,16 +595,23 @@ useEffect(() => {
       {/* ─────────────── Right Column */}
       <div className="sticky top-4 h-fit flex-1 min-w-[300px] space-y-4 self-start">
         <input
-          type="text"
-          placeholder="Enter Widget Name"
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none"
+        type="text"
+        placeholder="Enter Widget Name"
+        value={widgetName}
+        onChange={(e) => setWidgetName(e.target.value)}
+        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none"
         />
+
 
         {/* Save/Reset Buttons */}
         <div className="flex gap-2 justify-end">
-          <button className="flex items-center gap-1 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-sm font-semibold px-3 py-1.5 rounded shadow-sm">
+          <button
+            onClick={handleSave}
+            className="flex items-center gap-1 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-sm font-semibold px-3 py-1.5 rounded shadow-sm"
+          >
             <Save size={14} /> Save & Get Code
           </button>
+
           <button className="flex items-center gap-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-3 py-1.5 rounded shadow-sm">
             <RotateCcw size={14} /> Reset
           </button>
@@ -517,6 +623,13 @@ useEffect(() => {
           style={{
             height: heightMode === "pixels" ? `${heightValue}px` : undefined,
             width: widthMode === "pixels" ? `${widthValue}px` : "100%",
+            fontFamily: fontStyle,
+            textAlign: textAlign,
+            border: borderEnabled ? "1px solid #ccc" : "none",
+            borderRadius: cornerStyle === 'rounded' ? '12px' : '0px',
+            border: `1px solid ${borderColor}`,
+            padding: `${padding}px`,
+            gap: `${spacing}px`,
           }}
         >
   {/* magazine preview */}
