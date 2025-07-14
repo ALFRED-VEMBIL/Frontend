@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useContext } from "react";
 import { SelectedBlogContext } from "@/app/widgets/layout.js";
 import { useSearchParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 import {
@@ -11,6 +12,8 @@ import {
   List,
   LayoutGrid,
   Rows3,
+  Plus,
+  Minus,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -346,7 +349,7 @@ useEffect(() => {
     {/* Width */}
     <div className="flex justify-between items-start">
       <div className="w-1/2">
-        <label className="font-semibold block mb-2">Width</label>
+        <label className="font-normal block mb-2">Width</label>
         <div className="space-y-2">
           <label className="flex items-center gap-2">
             <input
@@ -557,10 +560,26 @@ useEffect(() => {
     <div className="flex justify-between items-center">
       <label className="w-1/2 font-normal">Padding</label>
       <div className="flex items-center gap-2">
-        <button onClick={() => setPadding(p => Math.max(0, p - 1))} className="bg-gray-400 text-white rounded-full w-6 h-6">-</button>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          className="bg-gray-400 text-white rounded-full w-7 h-7 flex items-center justify-center"
+          onClick={() => setPadding(p => p + 1)}
+        >
+          <Minus size={16} />
+        </motion.button>
+
         <div className="w-32 text-center  py-1 "><span>{padding}</span></div>
         
-        <button onClick={() => setPadding(p => p + 1)} className="bg-cyan-700 text-white rounded-full w-6 h-6">+</button>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          className="bg-cyan-700 text-white rounded-full w-7 h-7 flex items-center justify-center"
+          onClick={() => setPadding(p => p + 1)}
+        >
+          <Plus size={16} />
+        </motion.button>
+
       </div>
     </div>
 
@@ -569,9 +588,23 @@ useEffect(() => {
       <label className="w-1/2 font-block mb-2">Space Between Items</label>
       <div className='space-y-3'> 
         <div className="flex items-center space-y-3 gap-2">
-        <button onClick={() => setSpacing(s => Math.max(0, s - 1))} className="bg-gray-400 text-white rounded-full w-6 h-6">-</button>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          className="bg-gray-400 text-white rounded-full w-7 h-7 flex items-center justify-center"
+          onClick={() => setPadding(p => p - 1)}
+        >
+          <Minus size={16} />
+        </motion.button>
          <div className="w-32 text-center   py-1 "><span>{spacing}</span></div>
-        <button onClick={() => setSpacing(s => s + 1)} className="bg-cyan-700 text-white rounded-full w-6 h-6">+</button>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          className="bg-cyan-700 text-white rounded-full w-7 h-7 flex items-center justify-center"
+          onClick={() => setPadding(p => p + 1)}
+        >
+          <Plus size={16} />
+        </motion.button>
         </div>
       </div>
     </div>

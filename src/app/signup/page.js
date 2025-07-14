@@ -18,10 +18,10 @@ export default function SignupPage() {
 
     const data = await res.json();
     if (data.success) {
-      alert('✅ Signup successful. Please log in.');
+      alert(' Signup successful. Please log in.');
       router.push('/login');
     } else {
-      alert('❌ Signup failed: ' + data.error);
+      alert(' Signup failed: ' + data.error);
     }
   };
 

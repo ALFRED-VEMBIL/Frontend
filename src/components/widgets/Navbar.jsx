@@ -6,15 +6,15 @@ const Navbar = ({ onSelectBlog }) => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [mounted, setMounted] = useState(false); // ✅ NEW
+  const [mounted, setMounted] = useState(false); // NEW
   const dropdownRef = useRef(null);
   const router = useRouter();
 
   useEffect(() => {
-    setMounted(true); // ✅ Only render UI after hydration
+    setMounted(true); //  Only render UI after hydration
   }, []);
 
-  // 🔍 Fetch suggestions
+  //  Fetch suggestions
   useEffect(() => {
     if (!mounted || query.trim() === '') {
       setSuggestions([]);
@@ -54,11 +54,11 @@ const Navbar = ({ onSelectBlog }) => {
     router.push('/login');
   };
 
-  if (!mounted) return null; // ✅ Prevents hydration mismatch
+  if (!mounted) return null; //  Prevents hydration mismatch
 
   return (
-    <div className="w-full h-14 bg-white shadow flex items-center px-4 justify-between relative">
-      {/* 🔍 Search Bar */}
+    <div className="w-full h-14 bg-white  border-b border-gray-300 mb-4 flex items-center px-4 justify-between relative">
+      {/*  Search Bar */}
       <div className="relative w-1/2">
         <input
           type="text"
