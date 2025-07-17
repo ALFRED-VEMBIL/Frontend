@@ -3,7 +3,7 @@ import React from 'react';
 
 const Header = () => {
   return (
-    <div className="bg-white p-6  mt-4 ">
+    <div className="bg-white p-6  mt-4 padding-top: 3.5rem ">
       {/* Centered Title and Subtitle */}
       <div className="text-center mb-6">
         <h1 className="text-4xl font-semibold mb-2">Feedspot Widgets</h1>

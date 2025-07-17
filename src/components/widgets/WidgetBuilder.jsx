@@ -32,11 +32,15 @@ const Section = ({ title, children }) => (
 );
 
 const WidgetBuilder = () => {
-const { selectedBlog } = useContext(SelectedBlogContext);
+const { selectedBlog, setSelectedBlog } = useContext(SelectedBlogContext);
+
 const [viewType, setViewType] = useState('magazine');
 const [magazineStyle, setMagazineStyle] = useState('small');
 const [widthMode, setWidthMode] = useState("responsive");
 const [widthValue, setWidthValue] = useState(350);
+const [topic, setTopic] = useState('');
+const [feedUrl, setFeedUrl] = useState('');
+
 
 const [heightMode, setHeightMode] = useState("pixels");
 const [heightValue, setHeightValue] = useState(510);
@@ -67,42 +71,42 @@ const [showDivider, setShowDivider] = useState(false);
 
 
 const handleSave = async () => {
-  if (!selectedBlog) {
-    alert("❌ Please select a blog to get its feed URL");
+  // Use feed URL from selected blog if present, else fallback to saved state.
+  const effectiveFeedUrl = selectedBlog?.url || feedUrl;
+  if (!effectiveFeedUrl) {
+    alert("❌ Please select a blog (topic) or enter a feed URL.");
     return;
   }
 
   const formData = new FormData();
   formData.append("widget_name", widgetName);
-  formData.append("feed_url", selectedBlog.url);
+  formData.append("feed_url", effectiveFeedUrl);
   formData.append("layout", viewType);
   formData.append("sublayout", magazineStyle);
   formData.append("width_mode", widthMode);
   formData.append("width_value", widthValue);
   formData.append("height_mode", heightMode);
   formData.append("height_value", heightValue);
+  formData.append("topic", topic); // NEW: include topic for backend
 
   try {
-    let response;
-    if (editId) {
-      formData.append("id", editId); // pass the ID for update
-      response = await fetch("http://localhost:8080/feedspotclone/edit.php", {
-        method: "POST",
-        body: formData,
-      });
-    } else {
-      response = await fetch("http://localhost:8080/feedspotclone/saveWidgets.php", {
-        method: "POST",
-        body: formData,
-      });
-    }
+    const url = editId
+      ? "http://localhost:8080/feedspotclone/edit.php"
+      : "http://localhost:8080/feedspotclone/saveWidgets.php";
+
+    if (editId) formData.append("id", editId);
+
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
 
     const data = await response.json();
     console.log("Saved/Updated widget response:", data);
 
     if (data.success) {
       alert(editId ? "✅ Widget updated!" : "✅ Widget saved!");
-      router.push("/widgets"); // or wherever you want to redirect
+      router.push("/widgets");
     } else {
       alert("❌ Failed: " + data.error);
     }
@@ -113,6 +117,13 @@ const handleSave = async () => {
 };
 
 
+// When a blog is selected in Navbar, sync topic + feedUrl into form
+useEffect(() => {
+  if (selectedBlog) {
+    setTopic(selectedBlog.title || '');
+    setFeedUrl(selectedBlog.url || '');
+  }
+}, [selectedBlog]);
 
 
 
@@ -143,28 +154,41 @@ useEffect(() => {
 }, [selectedBlog]);
 
 useEffect(() => {
-  if (editId) {
-    fetch(`http://localhost:8080/feedspotclone/getWidgetById.php?id=${editId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const w = data.data;
-          setWidgetName(w.widget_name);
-          setViewType(w.layout);
-          setMagazineStyle(w.sublayout);
-          setWidthMode(w.width_mode);
-          setWidthValue(Number(w.width_value));
-          setHeightMode(w.height_mode);
-          setHeightValue(Number(w.height_value));
-        } else {
-          alert("Failed to load widget: " + data.error);
-        }
-      })
-      .catch(err => {
-        console.error("Error fetching widget", err);
-      });
-  }
-}, [editId]);
+  if (!editId) return;
+
+  fetch(`http://localhost:8080/feedspotclone/getWidgets.php?id=${editId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const w = data.data;
+        setWidgetName(w.widget_name);
+        setViewType(w.layout);
+        setMagazineStyle(w.sublayout);
+        setWidthMode(w.width_mode);
+        setWidthValue(Number(w.width_value));
+        setHeightMode(w.height_mode);
+        setHeightValue(Number(w.height_value));
+
+        // NEW: topic + feedUrl
+        setTopic(w.topic || '');
+        setFeedUrl(w.feed_url || '');
+
+        // Sync context so Navbar reflects the edited widget's topic.
+        // Minimal safe object; include id + url so other code still works.
+        setSelectedBlog({
+          id: w.id,
+          title: w.topic || w.widget_name,
+          url: w.feed_url || '',
+        });
+      } else {
+        alert("Failed to load widget: " + data.error);
+      }
+    })
+    .catch(err => {
+      console.error("Error fetching widget", err);
+    });
+}, [editId, setSelectedBlog]);
+
 
 
 useEffect(() => {
@@ -186,21 +210,10 @@ useEffect(() => {
 
 
 
-  const blogData = [
-    {
-      title: 'Propain Joins the Lightweight eMTB Club',
-      date: 'Jun 27, 2025',
-      author: 'Bikerumor',
-    },
-    {
-      title: 'What We Learned From Val di Sole',
-      date: 'Jun 26, 2025',
-      author: 'Vital MTB',
-    },
-  ];
+  
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full p-4 bg-white max-h-screen overflow-auto scrollbar-hide">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full top-4 p-4 bg-white max-h-screen overflow-auto scrollbar-hide">
       {/* ─────────────── Left Column */}
       <div className="space-y-6 min-w-[300px]">
 
