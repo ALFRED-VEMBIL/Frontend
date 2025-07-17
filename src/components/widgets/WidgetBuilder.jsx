@@ -213,7 +213,8 @@ useEffect(() => {
   
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full top-4 p-4 bg-white max-h-screen overflow-auto scrollbar-hide">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full top-4 p-4 bg-white max-h-screen overflow-y-scroll scroll-smooth">
+
       {/* ─────────────── Left Column */}
       <div className="space-y-6 min-w-[300px]">
 

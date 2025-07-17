@@ -1,11 +1,24 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import WidgetHeader from '@/components/widgets/MyWidgets';
+import EditWidgetModal from '@/components/widgets/MyWidgets/WidgetHeader.jsx';
 
 export default function WidgetEditor() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+
+  // Initialize editingWidget directly
+  const [editingWidget, setEditingWidget] = useState({
+    id: 1,
+    widget_name: "Sample Widget",
+    feed_url: "https://sample.com/feed",
+    layout: "grid",
+    sublayout: "3x3",
+    width_mode: "pixels",
+    width_value: "300",
+    height_mode: "auto",
+    height_value: "400"
+  });
 
   useEffect(() => {
     fetch("http://localhost:8080/feedspotclone/check-auth.php", {
@@ -24,5 +37,18 @@ export default function WidgetEditor() {
 
   if (loading) return <p>Loading...</p>;
 
-  return <WidgetHeader />;
+  return (
+    <>
+      {editingWidget && (
+        <EditWidgetModal
+          widget={editingWidget}
+          onClose={() => setEditingWidget(null)}
+          updateWidget={(updated) => {
+            console.log("Updated:", updated);
+            setEditingWidget(null);
+          }}
+        />
+      )}
+    </>
+  );
 }
