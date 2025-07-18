@@ -31,6 +31,7 @@ const Section = ({ title, children }) => (
   </div>
 );
 
+
 const WidgetBuilder = () => {
 const { selectedBlog, setSelectedBlog } = useContext(SelectedBlogContext);
 
@@ -70,35 +71,43 @@ const [spacing, setSpacing] = useState(10);
 const [showDivider, setShowDivider] = useState(false);
 
 
+
 const handleSave = async () => {
-  // Use feed URL from selected blog if present, else fallback to saved state.
   const effectiveFeedUrl = selectedBlog?.url || feedUrl;
+
   if (!effectiveFeedUrl) {
     alert("❌ Please select a blog (topic) or enter a feed URL.");
     return;
   }
 
-  const formData = new FormData();
-  formData.append("widget_name", widgetName);
-  formData.append("feed_url", effectiveFeedUrl);
-  formData.append("layout", viewType);
-  formData.append("sublayout", magazineStyle);
-  formData.append("width_mode", widthMode);
-  formData.append("width_value", widthValue);
-  formData.append("height_mode", heightMode);
-  formData.append("height_value", heightValue);
-  formData.append("topic", topic); // NEW: include topic for backend
+  const widgetData = {
+    user_id: 1, // ✅ TEMP STATIC — replace with dynamic user ID from auth later
+    widget_name: widgetName,
+    feed_url: effectiveFeedUrl,
+    layout: viewType,
+    sublayout: magazineStyle,
+    width_mode: widthMode,
+    width_value: widthValue,
+    height_mode: heightMode,
+    height_value: heightValue,
+    topic: topic
+  };
+
+  if (editId) {
+    widgetData.id = editId;
+  }
 
   try {
     const url = editId
       ? "http://localhost:8080/feedspotclone/edit.php"
       : "http://localhost:8080/feedspotclone/saveWidgets.php";
 
-    if (editId) formData.append("id", editId);
-
     const response = await fetch(url, {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(widgetData)
     });
 
     const data = await response.json();
@@ -115,6 +124,7 @@ const handleSave = async () => {
     alert("❌ Could not save widget.");
   }
 };
+
 
 
 // When a blog is selected in Navbar, sync topic + feedUrl into form
@@ -156,25 +166,31 @@ useEffect(() => {
 useEffect(() => {
   if (!editId) return;
 
+  setLoading(true); // Optional: show spinner if needed
+
   fetch(`http://localhost:8080/feedspotclone/getWidgets.php?id=${editId}`)
     .then(res => res.json())
     .then(data => {
       if (data.success) {
         const w = data.data;
-        setWidgetName(w.widget_name);
-        setViewType(w.layout);
-        setMagazineStyle(w.sublayout);
-        setWidthMode(w.width_mode);
-        setWidthValue(Number(w.width_value));
-        setHeightMode(w.height_mode);
-        setHeightValue(Number(w.height_value));
 
-        // NEW: topic + feedUrl
+        setWidgetName(w.widget_name || "");
+        setViewType(w.layout || "magazine");
+        setMagazineStyle(w.sublayout || "small");
+        setWidthMode(w.width_mode || "pixels");
+        setWidthValue(Number(w.width_value) || 300);
+        setHeightMode(w.height_mode || "pixels");
+        setHeightValue(Number(w.height_value) || 300);
+        setBlogs(Array.isArray(w.blogs) ? w.blogs : JSON.parse(w.blogs || "[]"));
+        setFontStyle(w.font_style || "inherit");
+        setTextAlign(w.text_align || "left");
+        setBorderEnabled(w.border_enabled !== "false");
+        setBorderColor(w.border_color || "#cccccc");
+        setCornerStyle(w.corner_style || "square");
+        setPadding(Number(w.padding) || 12);
+        setSpacing(Number(w.spacing) || 8);
         setTopic(w.topic || '');
         setFeedUrl(w.feed_url || '');
-
-        // Sync context so Navbar reflects the edited widget's topic.
-        // Minimal safe object; include id + url so other code still works.
         setSelectedBlog({
           id: w.id,
           title: w.topic || w.widget_name,
@@ -186,8 +202,11 @@ useEffect(() => {
     })
     .catch(err => {
       console.error("Error fetching widget", err);
-    });
+      alert("Could not load widget.");
+    })
+    .finally(() => setLoading(false)); // Optional: hide spinner
 }, [editId, setSelectedBlog]);
+
 
 
 
@@ -213,7 +232,7 @@ useEffect(() => {
   
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full top-4 p-4 bg-white max-h-screen overflow-y-scroll scroll-smooth">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full top-4 p-4 bg-white max-h-screen overflow-y-scroll scrollbar-hide">
 
       {/* ─────────────── Left Column */}
       <div className="space-y-6 min-w-[300px]">
@@ -644,7 +663,7 @@ useEffect(() => {
         <input
         type="text"
         placeholder="Enter Widget Name"
-        value={widgetName}
+        value={widgetName }
         onChange={(e) => setWidgetName(e.target.value)}
         className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none"
         />

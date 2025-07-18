@@ -1,7 +1,8 @@
-// TableSection.js
+// components/widgets/MyWidgets/TableSection.jsx
+'use client';
 import { useRouter } from 'next/navigation';
 
-const TableSection = ({ widgets, handleDelete, setEditingWidget }) => {
+const TableSection = ({ widgets, handleDelete }) => {
   const router = useRouter();
 
   return (
@@ -44,7 +45,9 @@ const TableSection = ({ widgets, handleDelete, setEditingWidget }) => {
                   Embed Code
                 </button>
                 <button
-                  onClick={() => router.push(`/widgets/create?id=${w.id}`)}
+                  onClick={() => {
+                    router.push(`/widgets/create?id=${w.id}`);
+                  }}
                   className="bg-white text-blue-700 border border-gray-300 px-2 py-1 rounded hover:bg-gray-100"
                 >
                   Edit Widget

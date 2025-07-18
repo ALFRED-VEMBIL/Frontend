@@ -1,24 +1,13 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import EditWidgetModal from '@/components/widgets/MyWidgets/WidgetHeader.jsx';
+import { useRouter, useSearchParams } from 'next/navigation';
+import WidgetHeader from '@/components/widgets/MyWidgets/WidgetHeader';
 
-export default function WidgetEditor() {
+export default function WidgetEditorPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
-
-  // Initialize editingWidget directly
-  const [editingWidget, setEditingWidget] = useState({
-    id: 1,
-    widget_name: "Sample Widget",
-    feed_url: "https://sample.com/feed",
-    layout: "grid",
-    sublayout: "3x3",
-    width_mode: "pixels",
-    width_value: "300",
-    height_mode: "auto",
-    height_value: "400"
-  });
+  const widgetId = searchParams.get('id'); // Get ?id=123 from URL
 
   useEffect(() => {
     fetch("http://localhost:8080/feedspotclone/check-auth.php", {
@@ -37,18 +26,5 @@ export default function WidgetEditor() {
 
   if (loading) return <p>Loading...</p>;
 
-  return (
-    <>
-      {editingWidget && (
-        <EditWidgetModal
-          widget={editingWidget}
-          onClose={() => setEditingWidget(null)}
-          updateWidget={(updated) => {
-            console.log("Updated:", updated);
-            setEditingWidget(null);
-          }}
-        />
-      )}
-    </>
-  );
+  return <WidgetHeader editId={widgetId} />;
 }
