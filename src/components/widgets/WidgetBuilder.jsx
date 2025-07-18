@@ -49,6 +49,7 @@ const [heightValue, setHeightValue] = useState(510);
 const [autoScroll, setAutoScroll] = useState(false);
 
 const [widgetName, setWidgetName] = useState("");
+const [loading, setLoading] = useState(false);
 
 
 const [speed, setSpeed] = useState(4);
@@ -69,6 +70,7 @@ const [customCSS, setCustomCSS] = useState('');
 const [padding, setPadding] = useState(5);
 const [spacing, setSpacing] = useState(10);
 const [showDivider, setShowDivider] = useState(false);
+
 
 
 
