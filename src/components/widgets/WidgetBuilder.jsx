@@ -69,13 +69,19 @@ const [cornerStyle, setCornerStyle] = useState('rounded'); // 'rounded' or 'squa
 const [customCSS, setCustomCSS] = useState('');
 const [padding, setPadding] = useState(5);
 const [spacing, setSpacing] = useState(10);
-const [showDivider, setShowDivider] = useState(false);
+
 
 
 
 
 const handleSave = async () => {
-  const effectiveFeedUrl = selectedBlog?.url || feedUrl;
+  console.log("DEBUG START ----------------------");
+
+  console.log("selectedBlog", selectedBlog);               // full object
+  console.log("selectedBlog?.url", selectedBlog?.url);     // specific URL
+  console.log("feedUrl", feedUrl);                         // form field
+  const effectiveFeedUrl = (feedUrl?.trim() || selectedBlog?.url?.trim() || "").trim();
+  console.log("effectiveFeedUrl", effectiveFeedUrl);
 
   if (!effectiveFeedUrl) {
     alert("❌ Please select a blog (topic) or enter a feed URL.");
@@ -83,7 +89,7 @@ const handleSave = async () => {
   }
 
   const widgetData = {
-    user_id: 1, // ✅ TEMP STATIC — replace with dynamic user ID from auth later
+    user_id: 1,
     widget_name: widgetName,
     feed_url: effectiveFeedUrl,
     layout: viewType,
@@ -92,7 +98,8 @@ const handleSave = async () => {
     width_value: widthValue,
     height_mode: heightMode,
     height_value: heightValue,
-    topic: topic
+    topic: topic,
+    image: selectedBlog?.image || "",
   };
 
   if (editId) {
@@ -107,9 +114,9 @@ const handleSave = async () => {
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(widgetData)
+      body: JSON.stringify(widgetData),
     });
 
     const data = await response.json();
@@ -129,85 +136,110 @@ const handleSave = async () => {
 
 
 
-// When a blog is selected in Navbar, sync topic + feedUrl into form
+
 useEffect(() => {
-  if (selectedBlog) {
+  if (!editId && selectedBlog) {
     setTopic(selectedBlog.title || '');
     setFeedUrl(selectedBlog.url || '');
+   
   }
-}, [selectedBlog]);
-
-
+}, [selectedBlog, editId]);
 
 useEffect(() => {
-  if (selectedBlog) {
-    console.log("selectedBlog inside WidgetBuilder:", selectedBlog);
-    fetch(`http://localhost:8080/feedspotclone/search.php?id=${selectedBlog.id}`)
+  const fetchBlogs = async () => {
+    if (editId) return; // ❌ Don't fetch blogs in edit mode
 
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Filtered blogs response:", data);
-        setBlogs(data);
-      })
-      .catch((err) => {
+    if (selectedBlog && selectedBlog.id !== undefined && selectedBlog.id !== null) {
+      try {
+        const res = await fetch(`http://localhost:8080/feedspotclone/search.php?id=${selectedBlog.id}`);
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setBlogs(data);
+          const fullBlog = data[0];
+          setSelectedBlog(fullBlog);
+          setFeedUrl(fullBlog.url || "");
+        }
+      } catch (err) {
         console.error("Error fetching filtered blogs", err);
-      });
-  } else {
-    fetch("http://localhost:8080/feedspotclone/blogs.php")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("All blogs response:", data);
+      }
+    } else {
+      try {
+        const res = await fetch("http://localhost:8080/feedspotclone/blogs.php");
+        const data = await res.json();
         setBlogs(data);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error fetching blogs", err);
-      });
-  }
-}, [selectedBlog]);
+      }
+    }
+  };
+
+  fetchBlogs();
+}, [selectedBlog, editId]);
+
 
 useEffect(() => {
   if (!editId) return;
 
-  setLoading(true); // Optional: show spinner if needed
+  setLoading(true);
 
   fetch(`http://localhost:8080/feedspotclone/getWidgets.php?id=${editId}`)
-    .then(res => res.json())
-    .then(data => {
+    .then((res) => res.json())
+    .then((data) => {
       if (data.success) {
         const w = data.data;
 
-        setWidgetName(w.widget_name || "");
-        setViewType(w.layout || "magazine");
-        setMagazineStyle(w.sublayout || "small");
-        setWidthMode(w.width_mode || "pixels");
-        setWidthValue(Number(w.width_value) || 300);
-        setHeightMode(w.height_mode || "pixels");
-        setHeightValue(Number(w.height_value) || 300);
-        setBlogs(Array.isArray(w.blogs) ? w.blogs : JSON.parse(w.blogs || "[]"));
-        setFontStyle(w.font_style || "inherit");
-        setTextAlign(w.text_align || "left");
-        setBorderEnabled(w.border_enabled !== "false");
-        setBorderColor(w.border_color || "#cccccc");
-        setCornerStyle(w.corner_style || "square");
-        setPadding(Number(w.padding) || 12);
-        setSpacing(Number(w.spacing) || 8);
-        setTopic(w.topic || '');
-        setFeedUrl(w.feed_url || '');
-        setSelectedBlog({
-          id: w.id,
-          title: w.topic || w.widget_name,
-          url: w.feed_url || '',
-        });
+        let widget = {};
+        try {
+          widget = typeof w.widget === "string" ? JSON.parse(w.widget) : w.widget || {};
+        } catch (err) {
+          console.error("Failed to parse widget JSON:", w.widget, err);
+          widget = {};
+        }
+
+        // Fill all settings from widget
+        setWidgetName(widget.widget_name || "");
+        setViewType(widget.layout || "magazine");
+        setMagazineStyle(widget.sublayout || "small");
+        setWidthMode(widget.width_mode || "pixels");
+        setWidthValue(Number(widget.width_value) || 300);
+        setHeightMode(widget.height_mode || "pixels");
+        setHeightValue(Number(widget.height_value) || 300);
+        setFontStyle(widget.font_style || "inherit");
+        setTextAlign(widget.text_align || "left");
+        setBorderEnabled(widget.border_enabled !== "false");
+        setBorderColor(widget.border_color || "#cccccc");
+        setCornerStyle(widget.corner_style || "square");
+        setPadding(Number(widget.padding) || 12);
+        setSpacing(Number(widget.spacing) || 8);
+        setTopic(widget.topic || "");
+
+        // ✅ Build a single blog object from widget
+const blogObj = {
+  id: widget.id,
+  title: widget.topic || widget.widget_name,
+  url: widget.feed_url || "",
+  image: widget.image || widget.image_url || "",  // ← Add this
+  category: widget.category || "",                // ← Add this
+};
+        
+
+
+setSelectedBlog(blogObj);
+setBlogs([blogObj]);
+setFeedUrl(widget.feed_url || "");
+setFeedUrl(widget.image || "");
+
       } else {
         alert("Failed to load widget: " + data.error);
       }
     })
-    .catch(err => {
+    .catch((err) => {
       console.error("Error fetching widget", err);
       alert("Could not load widget.");
     })
-    .finally(() => setLoading(false)); // Optional: hide spinner
-}, [editId, setSelectedBlog]);
+    .finally(() => setLoading(false));
+}, [editId]);
+
 
 
 
@@ -410,14 +442,22 @@ useEffect(() => {
       {/* Pixel control */}
       {widthMode === "pixels" && (
         <div className="flex items-center gap-2">
-          <button onClick={() => setWidthValue((prev) => prev - 10)} className="bg-gray-400 text-white rounded-full w-6 h-6">-</button>
+            <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          className="bg-cyan-700 text-white rounded-full w-7 h-7 flex items-center justify-center"
+           onClick={() => setWidthValue((prev) => prev - 10)} ><Minus size={16}/></motion.button>
           <input
             type="text"
             className="w-32 text-center py-1 "
             value={widthValue}
             readOnly
           />
-          <button onClick={() => setWidthValue((prev) => prev + 10)} className="bg-cyan-700 text-white rounded-full w-6 h-6">+</button>
+          <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          className="bg-cyan-700 text-white rounded-full w-7 h-7 flex items-center justify-center"
+          onClick={() => setWidthValue((prev) => prev + 10)} ><Plus size={16}/></motion.button>
         </div>
       )}
     </div>
@@ -451,14 +491,22 @@ useEffect(() => {
       <div className="space-y-3">
         {heightMode === "pixels" && (
           <div className="flex items-center gap-2">
-            <button onClick={() => setHeightValue((prev) => prev - 10)} className="bg-gray-400 text-white rounded-full w-6 h-6">-</button>
+            <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          className="bg-cyan-700 text-white rounded-full w-7 h-7 flex items-center justify-center"
+           onClick={() => setWidthValue((prev) => prev - 10)} ><Minus size={16}/></motion.button>
             <input
               type="text"
               className="w-32 text-center  py-1 "
               value={heightValue}
               readOnly
             />
-            <button onClick={() => setHeightValue((prev) => prev + 10)} className="bg-cyan-700 text-white rounded-full w-6 h-6">+</button>
+            <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          className="bg-cyan-700 text-white rounded-full w-7 h-7 flex items-center justify-center"
+           onClick={() => setWidthValue((prev) => prev + 10)} ><Plus size={16}/></motion.button>
           </div>
         )}
 
@@ -659,109 +707,137 @@ useEffect(() => {
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
 
+{/* ─────────────── Right Column */}
+<div className="sticky top-4 h-fit flex-1 min-w-[300px] space-y-4 self-start">
+  {/* Widget Name Input */}
+  <input
+    type="text"
+    placeholder="Enter Widget Name"
+    value={widgetName}
+    onChange={(e) => setWidgetName(e.target.value)}
+    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none"
+  />
 
-      {/* ─────────────── Right Column */}
-      <div className="sticky top-4 h-fit flex-1 min-w-[300px] space-y-4 self-start">
-        <input
-        type="text"
-        placeholder="Enter Widget Name"
-        value={widgetName }
-        onChange={(e) => setWidgetName(e.target.value)}
-        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none"
-        />
+  {/* Save/Reset Buttons */}
+  <div className="flex gap-2 justify-end">
+    <button
+      onClick={handleSave}
+      className="flex items-center gap-1 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-sm font-semibold px-3 py-1.5 rounded shadow-sm"
+    >
+      <Save size={14} /> Save & Get Code
+    </button>
+    <button className="flex items-center gap-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-3 py-1.5 rounded shadow-sm">
+      <RotateCcw size={14} /> Reset
+    </button>
+  </div>
 
+  {/* Preview Box */}
+  <div
+    ref={previewRef}
+    className="border border-gray-300 rounded p-3 text-sm text-gray-700 space-y-3 overflow-auto scrollbar-hide"
+    style={{
+      height: heightMode === "pixels" ? `${heightValue}px` : undefined,
+      width: widthMode === "pixels" ? `${widthValue}px` : "100%",
+      fontFamily: fontStyle,
+      textAlign: textAlign,
+      border: borderEnabled ? "1px solid #ccc" : "none",
+      borderRadius: cornerStyle === 'rounded' ? '12px' : '0px',
+      border: `1px solid ${borderColor}`,
+      padding: `${padding}px`,
+      gap: `${spacing}px`,
+    }}
+  >
 
-        {/* Save/Reset Buttons */}
-        <div className="flex gap-2 justify-end">
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-1 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-sm font-semibold px-3 py-1.5 rounded shadow-sm"
-          >
-            <Save size={14} /> Save & Get Code
-          </button>
+   
 
-          <button className="flex items-center gap-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-3 py-1.5 rounded shadow-sm">
-            <RotateCcw size={14} /> Reset
-          </button>
-        </div>
-
-        <div
-          ref={previewRef}
-          className="border border-gray-300 rounded p-3 text-sm text-gray-700 space-y-3 overflow-auto scrollbar-hide"
-          style={{
-            height: heightMode === "pixels" ? `${heightValue}px` : undefined,
-            width: widthMode === "pixels" ? `${widthValue}px` : "100%",
-            fontFamily: fontStyle,
-            textAlign: textAlign,
-            border: borderEnabled ? "1px solid #ccc" : "none",
-            borderRadius: cornerStyle === 'rounded' ? '12px' : '0px',
-            border: `1px solid ${borderColor}`,
-            padding: `${padding}px`,
-            gap: `${spacing}px`,
-          }}
-        >
-  {/* magazine preview */}
-  {viewType === "magazine" && magazineStyle === "small" && (
-    <div className="space-y-4">
-      {blogs.map((blog) => (
-        <div key={blog.id} className="flex gap-3 items-start">
-          <img
-            src={blog.image}
-            alt={blog.title}
-            className="w-24 h-20 object-cover rounded"
-          />
-          <div>
-            <a
-              href={blog.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-blue-700 hover:underline cursor-pointer"
-            >
-              {blog.title}
-            </a>
-            <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
+    {/* ─────────────── Magazine (Small) */}
+    {viewType === "magazine" && magazineStyle === "small" && (
+      <div className="space-y-4">
+        {blogs.map((blog) => (
+          <div key={blog.id || blog.url} className="flex gap-3 items-start">
+            <img
+              src={blog.image || blog.image_url}
+              alt={blog.title}
+              className="w-24 h-20 object-cover rounded"
+            />
+            <div>
+              <a
+                href={blog.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-blue-700 hover:underline cursor-pointer"
+              >
+                {blog.title}
+              </a>
+              <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  )}
+        ))}
+      </div>
+    )}
 
-  {viewType === "magazine" && magazineStyle === "large" && (
-    <div className="space-y-4">
-      {blogs.map((blog) => (
-        <div key={blog.id} className="border rounded overflow-hidden">
-          <img
-            src={blog.image}
-            alt={blog.title}
-            className="w-full h-40 object-cover"
-          />
-          <div className="p-2">
-            <a
-              href={blog.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-blue-700 hover:underline cursor-pointer"
-            >
-              {blog.title}
-            </a>
-            <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
+    {/* ─────────────── Magazine (Large) */}
+    {viewType === "magazine" && magazineStyle === "large" && (
+      <div className="space-y-4">
+        {blogs.map((blog) => (
+          <div key={blog.id || blog.url} className="border rounded overflow-hidden">
+            <img
+              src={blog.image || blog.image_url}
+              alt={blog.title}
+              className="w-full h-40 object-cover"
+            />
+            <div className="p-2">
+              <a
+                href={blog.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-blue-700 hover:underline cursor-pointer"
+              >
+                {blog.title}
+              </a>
+              <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  )}
+        ))}
+      </div>
+    )}
 
-  {/* list preview */}
-  {viewType === "list" && (
-    <div className="space-y-4">
-      {blogs.map((blog) => (
-        <div key={blog.id} className="flex gap-3 items-start border-b pb-2">
-          <img
-            src={blog.image}
-            alt={blog.title}
-            className="w-20 h-20 object-cover rounded"
-          />
-          <div>
+    {/* ─────────────── List */}
+    {viewType === "list" && (
+      <div className="space-y-4">
+        {blogs.map((blog) => (
+          <div key={blog.id || blog.url} className="flex gap-3 items-start border-b pb-2">
+            <img
+              src={blog.image || blog.image_url}
+              alt={blog.title}
+              className="w-20 h-20 object-cover rounded"
+            />
+            <div>
+              <a
+                href={blog.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium hover:underline"
+              >
+                {blog.title}
+              </a>
+              <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* ─────────────── Grid */}
+    {viewType === "grid" && (
+      <div className="grid grid-cols-2 gap-3">
+        {blogs.map((blog) => (
+          <div key={blog.id || blog.url} className="border rounded p-2 bg-gray-50">
+            <img
+              src={blog.image || blog.image_url}
+              alt={blog.title}
+              className="w-full h-24 object-cover rounded mb-1"
+            />
             <a
               href={blog.url}
               target="_blank"
@@ -772,38 +848,12 @@ useEffect(() => {
             </a>
             <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
           </div>
-        </div>
-      ))}
-    </div>
-  )}
-
-  {/* grid preview */}
-  {viewType === "grid" && (
-    <div className="grid grid-cols-2 gap-3">
-      {blogs.map((blog) => (
-        <div key={blog.id} className="border rounded p-2 bg-gray-50">
-          <img
-            src={blog.image}
-            alt={blog.title}
-            className="w-full h-24 object-cover rounded mb-1"
-          />
-          <a
-            href={blog.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium hover:underline"
-          >
-            {blog.title}
-          </a>
-          <div className="text-xs text-gray-500 mt-1">{blog.category}</div>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
-
+        ))}
       </div>
+    )}
+
+    </div>
+    </div>
     </div>
   );
 };
