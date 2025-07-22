@@ -1,5 +1,5 @@
 import React from 'react';
-import WidgetBuilder from '@/components/widgets/WidgetBuilder';
+import WidgetBuilder from '@/components/widgets/WidgetBuilder/WidgetBuilder';
 
 const EditWidgetModal = ({ editingWidget, setEditingWidget, setWidgets }) => {
   const handleSubmit = async (e) => {

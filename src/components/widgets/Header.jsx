@@ -11,7 +11,7 @@ const Header = () => {
       </div>
 
       {/* Two Column Layout */}
-      <div className="flex flex-col lg:flex-row justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row justify-between">
         {/* Left Paragraph */}
         <div className="lg:w-1/2 text-gray-700 mb-4 lg:mb-0">
           <p>
