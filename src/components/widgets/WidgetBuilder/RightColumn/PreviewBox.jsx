@@ -42,8 +42,8 @@ const PreviewBox = ({
   };
 
   return (
-    <div className="mt-4  ">
-      <h2 className="text-md font-semibold mb-2">
+    <div className="border border-gray-200 rounded bg-white ">
+      <h2 className="px-3 py-2 text-sm font-semibold bg-gray-100  border-b border-gray-300">
   {blogs.length > 0 ? blogs[0].category || 'Live Preview' : 'Live Preview'}
 </h2>
 

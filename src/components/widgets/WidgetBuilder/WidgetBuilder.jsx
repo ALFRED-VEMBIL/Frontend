@@ -16,16 +16,9 @@ import AutoScrollToggle from './LeftColumn/General/AutoScrollToggle';
 import HeightControl from './LeftColumn/General/HeightControl';
 import WidthControl from './LeftColumn/General/WidthControl';
 import PreviewSection from './RightColumn/PreviewSection';
-
-
-
-import {
-  Save,
-  RotateCcw,
-  List,
-  LayoutGrid,
-  Rows3,
-} from 'lucide-react';
+import FeedUrlCard from './LeftColumn/FeedUrlCard/FeedUrlCard';
+import FollowingViewsCard from './LeftColumn/FollowingViews/FollowingViewsCard';
+import ViewStyleSelector from './LeftColumn/FollowingViews/ViewStyleSelector'; 
 
 const Section = ({ title, children }) => (
   <div className="border border-gray-200 rounded bg-white">
@@ -82,10 +75,6 @@ const [fontSize, setFontSize] = useState(13);
 const [isBold, setIsBold] = useState(false);
 const [backgroundColor, setBackgroundColor] = useState('#ffffff');
 const [fontColor, setFontColor] = useState('#acadae');
-
-
-
-
 
 const handleSave = async () => {
   console.log("DEBUG START ----------------------");
@@ -146,8 +135,6 @@ const handleSave = async () => {
     alert("❌ Could not save widget.");
   }
 };
-
-
 
 
 useEffect(() => {
@@ -307,9 +294,6 @@ const handleReset = () => {
   setFontColor('#acadae');
 };
 
-
-  
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full top-4 p-4 bg-white">
 
@@ -319,133 +303,15 @@ const handleReset = () => {
 
         {/* RSS Feed URL */}
         <Section title="RSS Feed URL">
-          <div className="space-y-2">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="http://rss.feedspot.com/folder/869089/rss"
-                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded text-sm focus:outline-none"
-              />
-              <button className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600">
-                ➤
-              </button>
-            </div>
-            <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-              <option>Homepage</option>
-              <option>Sports</option>
-              <option>News</option>
-            </select>
-          </div>
+         <FeedUrlCard />
         </Section>
-{/* Following Views */}
-<Section
-  title={
-    <div className="flex justify-between items-center w-full">
-      <span>Following Views</span>
-      <div className="flex gap-2">
-        <button
-          onClick={() => setViewType('magazine')}
-          className={`p-1.5 border rounded ${
-            viewType === 'magazine' ? 'bg-gray-200' : ''
-          }`}
-        >
-          <LayoutGrid size={16} />
-        </button>
-        <button
-          onClick={() => setViewType('list')}
-          className={`p-1.5 border rounded ${
-            viewType === 'list' ? 'bg-gray-200' : ''
-          }`}
-        >
-          <List size={16} />
-        </button>
-        <button
-          onClick={() => setViewType('grid')}
-          className={`p-1.5 border rounded ${
-            viewType === 'grid' ? 'bg-gray-200' : ''
-          }`}
-        >
-          <Rows3 size={16} />
-        </button>
-      </div>
-    </div>
-  }
->
-  {/* Magazine style selector */}
-  {viewType === 'magazine' && (
-    <div className="flex justify-center items-center overflow-hidden mt-3">
-      <div className="flex gap-2">
-        <div
-          className={`
-            cursor-pointer
-            border-2
-            rounded
-            overflow-hidden
-            ${magazineStyle === 'small' ? 'border-blue-500' : 'border-gray-300'}
-          `}
-          onClick={() => setMagazineStyle('small')}
-        > 
-          <img
-            src="https://www.feedspot.com/widgets/Assets/images/template_images/4.webp"
-            alt="small"
-            className="max-w-full max-h-80 object-contain"
-          />
-        </div>
-        <div
-          className={`
-            cursor-pointer
-            border-2
-            rounded
-            overflow-hidden
-            ${magazineStyle === 'large' ? 'border-blue-500' : 'border-gray-300'}
-          `}
-          onClick={() => setMagazineStyle('large')}
-        >
-          <img
-            src="https://www.feedspot.com/widgets/Assets/images/template_images/5.webp"
-            alt="large"
-            className="max-w-full max-h-80 object-contain"
-          />
-        </div>
-      </div>
-    </div>
-  )}
-
-  {/* List style selector */}
-  {viewType === 'list' && (
-    <div className="flex justify-center items-center overflow-hidden mt-3">
-      <div className="flex gap-2">
-        <div
-          className="cursor-pointer border-2 rounded overflow-hidden border-blue-500"
-        >
-          <img
-            src="https://www.feedspot.com/widgets/Assets/images/template_images/1.webp"
-            alt="list-style"
-            className="max-w-full max-h-80 object-contain"
-          />
-        </div>
-      </div>
-    </div>
-  )}
-
-  {/* Grid style selector */}
-  {viewType === 'grid' && (
-    <div className="flex justify-center items-center overflow-hidden mt-3">
-      <div className="flex gap-2">
-        <div
-          className="cursor-pointer border-2 rounded overflow-hidden border-blue-500"
-        >
-          <img
-            src="https://www.feedspot.com/widgets/Assets/images/template_images/6.webp"
-            alt="grid-style"
-            className="max-w-full max-h-80 object-contain"
-          />
-        </div>
-      </div>
-    </div>
-  )}
+<Section title={<FollowingViewsCard viewType={viewType} setViewType={setViewType} />}>
+  <ViewStyleSelector
+    viewType={viewType}
+    magazineStyle={magazineStyle}
+    setMagazineStyle={setMagazineStyle}
+  />
 </Section>
-
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
