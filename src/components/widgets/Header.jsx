@@ -16,13 +16,13 @@ const Header = () => {
         <div className="lg:w-1/2 text-gray-700 mb-4 lg:mb-0">
           <p>
             Feedspot Widget is a handy widget which lets you embed and display latest updates from your favourite sources 
-            (Blogs, News Websites, Podcasts, YouTube Channels, RSS Feeds, etc) on your website. <a href="#" className="text-blue-500">Watch Video</a>
+            (Blogs, News Websites, Podcasts, YouTube Channels, RSS Feeds, etc) on your website. <a href="#" className="text-cyan-700">Watch Video</a>
           </p>
         </div>
 
         {/* Step Instructions */}
         <div className="lg:w-1/2 text-gray-700 space-y-1">
-          <p><strong>Step 1</strong> - Get started by adding your favourite websites... <a href="#" className="text-blue-500">Watch Video</a></p>
+          <p><strong>Step 1</strong> - Get started by adding your favourite websites... <a href="#" className="text-cyan-700">Watch Video</a></p>
           <p><strong>Step 2</strong> - Customize the look and feel of the widget.</p>
           <p><strong>Step 3</strong> - Click on "Save and Get Code"... </p>
           <p><strong>Step 4</strong> - Widget updates automatically...</p>

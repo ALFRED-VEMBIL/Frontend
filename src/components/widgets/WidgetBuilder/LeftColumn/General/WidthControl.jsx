@@ -24,7 +24,7 @@ const WidthControl = ({ widthMode, setWidthMode, widthValue, setWidthValue }) =>
               checked={widthMode === "responsive"}
               onChange={() => setWidthMode("responsive")}
             />
-            <span>Responsive (Mobile friendly)</span>
+            <span>Responsive </span>
           </label>
         </div>
       </div>

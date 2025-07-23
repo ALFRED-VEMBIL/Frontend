@@ -1,5 +1,7 @@
 'use client';
 import React from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+
 import CustomToggle from './CustomToggle';
 import TitleInput from './TitleInput';
 import FontSizeControl from './FontSizeControl';
@@ -16,20 +18,42 @@ const FeedTitleCard = ({
   fontColor, setFontColor
 }) => {
   return (
-    <div className="border rounded bg-white shadow p-4 space-y-4">
-      <h2 className="text-blue-600 text-lg font-bold border-b pb-1">Feed Title</h2>
-      
+    <div className="bg-white text-sm space-y-8 px-2 py-2 rounded-md ">
+      {/* Toggle */}
       <CustomToggle isCustomTitle={isCustomTitle} setIsCustomTitle={setIsCustomTitle} />
-      <TitleInput label="Main Title" value={mainTitle} setValue={setMainTitle} />
-      <TitleInput label="Main Title Link" value={mainTitleLink} setValue={setMainTitleLink} />
-      <FontSizeControl fontSize={fontSize} setFontSize={setFontSize} />
-      <BoldToggle isBold={isBold} setIsBold={setIsBold} />
 
-      <div>
-        <h3 className="text-md font-semibold mt-2 mb-1">Colors</h3>
-        <ColorPicker label="Background color" value={backgroundColor} setValue={setBackgroundColor} />
-        <ColorPicker label="Font color" value={fontColor} setValue={setFontColor} />
-      </div>
+      {/* Animated content using AnimatePresence */}
+      <AnimatePresence>
+        {isCustomTitle && (
+          <motion.div
+            key="custom-options"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="overflow-hidden space-y-6"
+          >
+            <TitleInput label="Main Title" value={mainTitle} setValue={setMainTitle} />
+            <TitleInput label="Main Title Link" value={mainTitleLink} setValue={setMainTitleLink} />
+            <FontSizeControl fontSize={fontSize} setFontSize={setFontSize} />
+            <BoldToggle isBold={isBold} setIsBold={setIsBold} />
+
+            <div>
+              <h3 className="text-md font-semibold mb-2">Colors</h3>
+              <ColorPicker
+                label="Background Color"
+                value={backgroundColor}
+                setValue={setBackgroundColor}
+              />
+              <ColorPicker
+                label="Font Color"
+                value={fontColor}
+                setValue={setFontColor}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

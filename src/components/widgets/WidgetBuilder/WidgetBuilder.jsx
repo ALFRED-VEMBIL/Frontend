@@ -5,16 +5,7 @@ import { SelectedBlogContext } from "@/app/widgets/layout.js";
 import { useSearchParams, useRouter } from "next/navigation";
 
 import FeedTitleCard from './LeftColumn/FeedTitle/FeedTitleCard';
-import SpacingControl from './LeftColumn/General/SpacingControl';
-import PaddingControl from './LeftColumn/General/PaddingControl';
-import CornerSelector from './LeftColumn/General/CornerSelector';
-import BorderColorPicker from './LeftColumn/General/BorderColorPicker';
-import BorderToggle from './LeftColumn/General/BorderToggle';
-import TextAlignSelector from './LeftColumn/General/TextAlignSelector';
-import FontStyleSelector from './LeftColumn/General/FontStyleSelector';
-import AutoScrollToggle from './LeftColumn/General/AutoScrollToggle';
-import HeightControl from './LeftColumn/General/HeightControl';
-import WidthControl from './LeftColumn/General/WidthControl';
+import GeneralSettings from './LeftColumn/General/GeneralSettings';
 import PreviewSection from './RightColumn/PreviewSection';
 import FeedUrlCard from './LeftColumn/FeedUrlCard/FeedUrlCard';
 import FollowingViewsCard from './LeftColumn/FollowingViews/FollowingViewsCard';
@@ -22,7 +13,7 @@ import ViewStyleSelector from './LeftColumn/FollowingViews/ViewStyleSelector';
 
 const Section = ({ title, children }) => (
   <div className="border border-gray-200 rounded bg-white">
-    <header className="px-3 py-2 text-sm font-semibold bg-gray-100  border-b border-gray-300">
+    <header className="px-3 py-2 text-xl font-semibold bg-gray-100 text-cyan-800 border-b border-gray-300">
       {title}
     </header>
     <div className="p-4 space-y-4 text-sm">{children}</div>
@@ -62,19 +53,22 @@ const [fontStyle, setFontStyle] = useState("Arial, Helvetica, sans-serif");
 const [textAlign, setTextAlign] = useState("left");
 const [borderEnabled, setBorderEnabled] = useState(true);
 
-const [borderColor, setBorderColor] = useState('#d61445');
-const [cornerStyle, setCornerStyle] = useState('rounded'); // 'rounded' or 'square'
+const [borderColor, setBorderColor] = useState('#0e7490');
+const [cornerStyle, setCornerStyle] = useState('Square'); // 'rounded' or 'square'
 
 const [padding, setPadding] = useState(10);
 const [spacing, setSpacing] = useState(10);
 
 const [isCustomTitle, setIsCustomTitle] = useState(false);
-const [mainTitle, setMainTitle] = useState('');
-const [mainTitleLink, setMainTitleLink] = useState('');
-const [fontSize, setFontSize] = useState(13);
+const [mainTitle, setMainTitle] = useState("Default Title");
+const [mainTitleLink, setMainTitleLink] = useState("");
+const [fontSize, setFontSize] = useState(18);
 const [isBold, setIsBold] = useState(false);
-const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-const [fontColor, setFontColor] = useState('#acadae');
+const [backgroundColor, setBackgroundColor] = useState("#f3f4f6");
+const [fontColor, setFontColor] = useState("#0e7490");
+
+
+
 
 const handleSave = async () => {
   console.log("DEBUG START ----------------------");
@@ -102,6 +96,20 @@ const handleSave = async () => {
     height_value: heightValue,
     topic: topic,
     image: selectedBlog?.image || "",
+     // Add FeedTitle & General customization values:
+    background_color: backgroundColor,
+    font_color: fontColor,
+    font_size: fontSize,
+    is_bold: isBold,
+    is_custom_title: isCustomTitle,
+    // Add any other general settings like padding, spacing, etc.
+    padding: padding,
+    spacing: spacing,
+    border_enabled: borderEnabled,
+    border_color: borderColor,
+    font_style: fontStyle,
+    text_align: textAlign,
+    corner_style: cornerStyle
   };
 
   if (editId) {
@@ -212,6 +220,12 @@ useEffect(() => {
         setPadding(Number(widget.padding) || 12);
         setSpacing(Number(widget.spacing) || 8);
         setTopic(widget.topic || "");
+        setBackgroundColor(widget.background_color || "#f3f4f6");
+        setFontColor(widget.font_color || "#000000");
+        setFontSize(widget.font_size || 14);
+        setIsBold(widget.is_bold || false);
+        setIsCustomTitle(widget.is_custom_title || false);
+
 
         // ✅ Build a single blog object from widget
 const blogObj = {
@@ -305,84 +319,64 @@ const handleReset = () => {
         <Section title="RSS Feed URL">
          <FeedUrlCard />
         </Section>
-<Section title={<FollowingViewsCard viewType={viewType} setViewType={setViewType} />}>
-  <ViewStyleSelector
-    viewType={viewType}
-    magazineStyle={magazineStyle}
-    setMagazineStyle={setMagazineStyle}
-  />
-</Section>
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
+        <Section title={<FollowingViewsCard viewType={viewType} setViewType={setViewType} />}>
+          <ViewStyleSelector
+            viewType={viewType}
+            magazineStyle={magazineStyle}
+            setMagazineStyle={setMagazineStyle}
+          />
+        </Section>
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
 
 <Section title="General">
-  <div className="bg-white text-sm space-y-5 px-4 py-2">
-    <WidthControl
-      widthMode={widthMode}
-      setWidthMode={setWidthMode}
-      widthValue={widthValue}
-      setWidthValue={setWidthValue}
-    />
-    <HeightControl
-      heightMode={heightMode}
-      setHeightMode={setHeightMode}
-      heightValue={heightValue}
-      setHeightValue={setHeightValue}
-    />
-    <AutoScrollToggle autoScroll={autoScroll} setAutoScroll={setAutoScroll} />
-    <FontStyleSelector fontStyle={fontStyle} setFontStyle={setFontStyle} />
-    <TextAlignSelector textAlign={textAlign} setTextAlign={setTextAlign} />
-    <BorderToggle borderEnabled={borderEnabled} setBorderEnabled={setBorderEnabled} />
-    <BorderColorPicker borderColor={borderColor} setBorderColor={setBorderColor} />
-    <CornerSelector cornerStyle={cornerStyle} setCornerStyle={setCornerStyle} />
-    <PaddingControl padding={padding} setPadding={setPadding} />
-    <SpacingControl spacing={spacing} setSpacing={setSpacing} />
-
-
-
-  </div>
+  <GeneralSettings
+    widthMode={widthMode}
+    setWidthMode={setWidthMode}
+    widthValue={widthValue}
+    setWidthValue={setWidthValue}
+    heightMode={heightMode}
+    setHeightMode={setHeightMode}
+    heightValue={heightValue}
+    setHeightValue={setHeightValue}
+    autoScroll={autoScroll}
+    setAutoScroll={setAutoScroll}
+    fontStyle={fontStyle}
+    setFontStyle={setFontStyle}
+    textAlign={textAlign}
+    setTextAlign={setTextAlign}
+    borderEnabled={borderEnabled}
+    setBorderEnabled={setBorderEnabled}
+    borderColor={borderColor}
+    setBorderColor={setBorderColor}
+    cornerStyle={cornerStyle}
+    setCornerStyle={setCornerStyle}
+    padding={padding}
+    setPadding={setPadding}
+    spacing={spacing}
+    setSpacing={setSpacing}
+  />
 </Section>
-<Section>
+
+
+<Section title="Feed Title">
       <FeedTitleCard
-      isCustomTitle={isCustomTitle}
-      setIsCustomTitle={setIsCustomTitle}
-      mainTitle={mainTitle}
-      setMainTitle={setMainTitle}
-      mainTitleLink={mainTitleLink}
-      setMainTitleLink={setMainTitleLink}
-      fontSize={fontSize}
-      setFontSize={setFontSize}
-      isBold={isBold}
-      setIsBold={setIsBold}
-      backgroundColor={backgroundColor}
-      setBackgroundColor={setBackgroundColor}
-      fontColor={fontColor}
-      setFontColor={setFontColor}
+      isCustomTitle={isCustomTitle} setIsCustomTitle={setIsCustomTitle}
+  mainTitle={mainTitle} setMainTitle={setMainTitle}
+  mainTitleLink={mainTitleLink} setMainTitleLink={setMainTitleLink}
+  fontSize={fontSize} setFontSize={setFontSize}
+  isBold={isBold} setIsBold={setIsBold}
+  backgroundColor={backgroundColor} setBackgroundColor={setBackgroundColor}
+  fontColor={fontColor} setFontColor={setFontColor}
      />
 </Section>
 
 </div>
 
 {/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
-{/*-----------------------------------------------------------------------------------------------------------------------------------------*/}
 
 {/* ─────────────── Right Column */}
 <div className="sticky top-4 h-fit flex-1 min-w-[300px] space-y-4 self-start">
-  <PreviewSection
+ <PreviewSection
   widgetName={widgetName}
   setWidgetName={setWidgetName}
   blogs={blogs}
@@ -402,7 +396,15 @@ const handleReset = () => {
   previewRef={previewRef}
   handleSave={handleSave}
   handleReset={handleReset}
+  isCustomTitle={isCustomTitle}
+  mainTitle={mainTitle}
+  mainTitleLink={mainTitleLink}
+  fontSize={fontSize}
+  isBold={isBold}
+  backgroundColor={backgroundColor}
+  fontColor={fontColor}
 />
+
 
 
     </div>

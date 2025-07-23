@@ -13,7 +13,7 @@ const ViewStyleSelector = ({ viewType, magazineStyle, setMagazineStyle }) => {
                 border-2
                 rounded
                 overflow-hidden
-                ${magazineStyle === 'small' ? 'border-blue-500' : 'border-gray-300'}
+                ${magazineStyle === 'small' ? 'border-cyan-700' : 'border-gray-300'}
               `}
               onClick={() => setMagazineStyle('small')}
             >
@@ -29,7 +29,7 @@ const ViewStyleSelector = ({ viewType, magazineStyle, setMagazineStyle }) => {
                 border-2
                 rounded
                 overflow-hidden
-                ${magazineStyle === 'large' ? 'border-blue-500' : 'border-gray-300'}
+                ${magazineStyle === 'large' ? 'border-cyan-700' : 'border-gray-300'}
               `}
               onClick={() => setMagazineStyle('large')}
             >
@@ -47,7 +47,7 @@ const ViewStyleSelector = ({ viewType, magazineStyle, setMagazineStyle }) => {
       {viewType === 'list' && (
         <div className="flex justify-center items-center overflow-hidden mt-3">
           <div className="flex gap-2">
-            <div className="cursor-pointer border-2 rounded overflow-hidden border-blue-500">
+            <div className="cursor-pointer border-2 rounded overflow-hidden border-cyan-700">
               <img
                 src="https://www.feedspot.com/widgets/Assets/images/template_images/1.webp"
                 alt="list-style"
@@ -62,7 +62,7 @@ const ViewStyleSelector = ({ viewType, magazineStyle, setMagazineStyle }) => {
       {viewType === 'grid' && (
         <div className="flex justify-center items-center overflow-hidden mt-3">
           <div className="flex gap-2">
-            <div className="cursor-pointer border-2 rounded overflow-hidden border-blue-500">
+            <div className="cursor-pointer border-2 rounded overflow-hidden border-cyan-700">
               <img
                 src="https://www.feedspot.com/widgets/Assets/images/template_images/6.webp"
                 alt="grid-style"
