@@ -1,4 +1,4 @@
-const ColorPicker = ({ label, value = '#f3f4f6', setValue }) => (
+const ColorPicker = ({ label, value , setValue }) => (
   <div className="flex items-center justify-between mt-3">
     <label>{label}</label>
     <div className="flex items-center space-x-2">

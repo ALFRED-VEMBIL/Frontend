@@ -31,6 +31,7 @@ const [topic, setTopic] = useState('');
 const [feedUrl, setFeedUrl] = useState('');
 
 const [selectedTitle, setSelectedTitle] = useState('');
+const [category, setCategory] = useState('');
 
 const [heightMode, setHeightMode] = useState("pixels");
 const [heightValue, setHeightValue] = useState(510);
@@ -94,7 +95,8 @@ const handleSave = async () => {
     width_value: widthValue,
     height_mode: heightMode,
     height_value: heightValue,
-    topic: topic,
+    category: category,
+
     image: selectedBlog?.image || "",
      // Add FeedTitle & General customization values:
     background_color: backgroundColor,
@@ -109,7 +111,8 @@ const handleSave = async () => {
     border_color: borderColor,
     font_style: fontStyle,
     text_align: textAlign,
-    corner_style: cornerStyle
+    corner_style: cornerStyle,
+    title: mainTitle,
   };
 
   if (editId) {
@@ -147,7 +150,7 @@ const handleSave = async () => {
 
 useEffect(() => {
   if (!editId && selectedBlog) {
-    setTopic(selectedBlog.title || '');
+    setCategory(selectedBlog.category || '');
     setFeedUrl(selectedBlog.url || '');
    
   }
@@ -159,7 +162,7 @@ useEffect(() => {
 
     if (selectedBlog && selectedBlog.id !== undefined && selectedBlog.id !== null) {
       try {
-        const res = await fetch(`http://localhost:8080/feedspotclone/search.php?id=${selectedBlog.id}`);
+        const res = await fetch(`http://localhost:8080/feedspotclone/search.php?category=${selectedBlog.category}`);
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           setBlogs(data);
@@ -183,7 +186,6 @@ useEffect(() => {
 
   fetchBlogs();
 }, [selectedBlog, editId]);
-
 
 useEffect(() => {
   if (!editId) return;
@@ -214,35 +216,34 @@ useEffect(() => {
         setHeightValue(Number(widget.height_value) || 300);
         setFontStyle(widget.font_style || "inherit");
         setTextAlign(widget.text_align || "left");
-        setBorderEnabled(widget.border_enabled !== "false");
+        setBorderEnabled(widget.border_enabled !== "false" && widget.border_enabled !== false);
         setBorderColor(widget.border_color || "#cccccc");
         setCornerStyle(widget.corner_style || "square");
         setPadding(Number(widget.padding) || 12);
         setSpacing(Number(widget.spacing) || 8);
-        setTopic(widget.topic || "");
+        setCategory(widget.category || "");
+
         setBackgroundColor(widget.background_color || "#f3f4f6");
         setFontColor(widget.font_color || "#000000");
         setFontSize(widget.font_size || 14);
         setIsBold(widget.is_bold || false);
         setIsCustomTitle(widget.is_custom_title || false);
+        setMainTitle(widget.title || "");
+        setMainTitleLink(widget.main_title_link || "");
 
-
-        // ✅ Build a single blog object from widget
-const blogObj = {
+        // Build blog object
+        const blogObj = {
   id: widget.id,
-  title: widget.topic || widget.widget_name,
+  title: widget.widget_name,
   url: widget.feed_url || "",
-  image: widget.image || widget.image_url || "",  // ← Add this
-  category: widget.category || "",                // ← Add this
+  image: widget.image || widget.image_url || "",
+  category: widget.category || "", // ✅ this should exist
 };
-        
 
 
-setSelectedBlog(blogObj);
-setBlogs([blogObj]);
-setFeedUrl(widget.feed_url || "");
-setFeedUrl(widget.image || "");
-
+        setSelectedBlog(blogObj);
+        setBlogs([blogObj]);
+        setFeedUrl(widget.feed_url || "");
       } else {
         alert("Failed to load widget: " + data.error);
       }
@@ -253,7 +254,6 @@ setFeedUrl(widget.image || "");
     })
     .finally(() => setLoading(false));
 }, [editId]);
-
 
 
 
@@ -296,7 +296,8 @@ const handleReset = () => {
   // Feed & Blog Info
   setSelectedBlog(null);
   setFeedUrl('');
-  setTopic('');
+  setCategory('');
+
 
   // Title Styling
   setIsCustomTitle(false);
@@ -403,7 +404,10 @@ const handleReset = () => {
   isBold={isBold}
   backgroundColor={backgroundColor}
   fontColor={fontColor}
+  category={category}
+  setCategory={setCategory}
 />
+
 
 
 

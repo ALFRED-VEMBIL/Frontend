@@ -25,7 +25,7 @@ const PreviewSection = ({
   handleSave,
   handleReset,
 
-  // ✅ NEWLY ADDED TITLE CUSTOMIZATION PROPS
+  //  NEWLY ADDED TITLE CUSTOMIZATION PROPS
   isCustomTitle,
   mainTitle,
   mainTitleLink,
@@ -63,7 +63,7 @@ const PreviewSection = ({
         spacing={spacing}
         previewRef={previewRef}
 
-        // ✅ TITLE CUSTOMIZATION PROPS PASSED TO PREVIEWBOX
+        //  TITLE CUSTOMIZATION PROPS PASSED TO PREVIEWBOX
         isCustomTitle={isCustomTitle}
         mainTitle={mainTitle}
         mainTitleLink={mainTitleLink}
