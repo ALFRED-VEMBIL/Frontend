@@ -1,13 +1,16 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaGoogle, FaFacebookF } from 'react-icons/fa';
+import { useAuth } from '@/app/AuthContext';
+
 import { FiMail, FiLock } from 'react-icons/fi';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const { refreshAuth } = useAuth();
+
 
   const handleLogin = async () => {
     const res = await fetch('http://localhost:8080/feedspotclone/login.php', {
@@ -19,8 +22,9 @@ export default function LoginPage() {
 
     const data = await res.json();
     if (res.ok && data.success) {
-      router.push('/widgets');
-    } else {
+  await refreshAuth(); // re-check authentication
+  router.push('/widgets');
+} else {
       alert('❌ Login failed: ' + data.error);
     }
   };
@@ -37,22 +41,7 @@ export default function LoginPage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Log in to your Account</h2>
           <p className="text-sm text-gray-500 mb-6">Welcome back! Select method to log in:</p>
 
-          {/* Social buttons */}
-          <div className="flex space-x-3 mb-4">
-            <button className="flex items-center justify-center border border-gray-300 rounded-md px-4 py-2 text-sm w-full hover:bg-gray-50">
-              <FaGoogle className="mr-2" /> Google
-            </button>
-            <button className="flex items-center justify-center border border-gray-300 rounded-md px-4 py-2 text-sm w-full hover:bg-gray-50">
-              <FaFacebookF className="mr-2" /> Facebook
-            </button>
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center my-4">
-            <hr className="flex-1 border-gray-300" />
-            <span className="px-3 text-sm text-gray-400">or continue with email</span>
-            <hr className="flex-1 border-gray-300" />
-          </div>
+          
 
           {/* Email Input */}
           <div className="relative mb-4">

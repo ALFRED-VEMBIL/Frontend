@@ -15,6 +15,7 @@ const sampleBlogs = [
 export default function FramerCarousel({ blogs = sampleBlogs }) {
   const visibleCount = 3;
   const [index, setIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
   const containerRef = useRef(null);
 
   const getVisibleBlogs = () => {
@@ -26,10 +27,12 @@ export default function FramerCarousel({ blogs = sampleBlogs }) {
   };
 
   const handleNext = () => {
+    setDirection(1);
     setIndex(prev => (prev + 1) % blogs.length);
   };
 
   const handlePrev = () => {
+    setDirection(-1);
     setIndex(prev => (prev - 1 + blogs.length) % blogs.length);
   };
 
@@ -53,14 +56,12 @@ export default function FramerCarousel({ blogs = sampleBlogs }) {
       <div ref={containerRef} className="overflow-hidden">
         <motion.div
           className="flex gap-2"
-          key={index} // re-trigger motion animation
-          initial={{ x: 300 }}
+          key={index}
+          initial={{ x: direction === 1 ? 200 : -200 }}
           animate={{ x: 0 }}
-          exit={{ x: -300 }}
           transition={{
-            type: 'spring',
-            stiffness: 300,
-            damping: 25,
+            duration: 0.5,
+            ease: 'easeInOut',
           }}
         >
           {getVisibleBlogs().map((blog, i) => (
