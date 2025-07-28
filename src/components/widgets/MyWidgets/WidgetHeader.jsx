@@ -48,6 +48,7 @@ const WidgetHeader = () => {
   useEffect(() => {
     // Fetch all widgets
     fetch("http://localhost:8080/feedspotclone/getWidgets.php", {
+      
       credentials: "include",
     })
       .then((res) => res.json())

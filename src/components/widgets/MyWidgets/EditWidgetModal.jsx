@@ -24,6 +24,7 @@ const EditWidgetModal = ({ editingWidget, setEditingWidget, setWidgets }) => {
         headers: {
           "Content-Type": "application/json",
         },
+         credentials: "include", 
         body: JSON.stringify(data),
       });
 

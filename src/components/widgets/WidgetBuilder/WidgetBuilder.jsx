@@ -69,8 +69,6 @@ const [backgroundColor, setBackgroundColor] = useState("#f3f4f6");
 const [fontColor, setFontColor] = useState("#0e7490");
 
 
-
-
 const handleSave = async () => {
   console.log("DEBUG START ----------------------");
 
@@ -79,14 +77,15 @@ const handleSave = async () => {
   console.log("feedUrl", feedUrl);                         // form field
   const effectiveFeedUrl = (feedUrl?.trim() || selectedBlog?.url?.trim() || "").trim();
   console.log("effectiveFeedUrl", effectiveFeedUrl);
-
+  
   if (!effectiveFeedUrl) {
     alert("❌ Please select a blog (topic) or enter a feed URL.");
     return;
   }
 
+
   const widgetData = {
-    user_id: 1,
+    
     widget_name: widgetName,
     feed_url: effectiveFeedUrl,
     layout: viewType,
@@ -129,6 +128,7 @@ const handleSave = async () => {
       headers: {
         "Content-Type": "application/json",
       },
+        credentials: "include", 
       body: JSON.stringify(widgetData),
     });
 
@@ -136,14 +136,14 @@ const handleSave = async () => {
     console.log("Saved/Updated widget response:", data);
 
     if (data.success) {
-      alert(editId ? "✅ Widget updated!" : "✅ Widget saved!");
+      alert(editId ? " Widget updated!" : " Widget saved!");
       router.push("/widgets");
     } else {
-      alert("❌ Failed: " + data.error);
+      alert(" Failed: " + data.error);
     }
   } catch (err) {
     console.error("Fetch error:", err);
-    alert("❌ Could not save widget.");
+    alert(" Could not save widget.");
   }
 };
 
@@ -158,7 +158,7 @@ useEffect(() => {
 
 useEffect(() => {
   const fetchBlogs = async () => {
-    if (editId) return; // ❌ Don't fetch blogs in edit mode
+    if (editId) return; //  Don't fetch blogs in edit mode
 
     if (selectedBlog && selectedBlog.id !== undefined && selectedBlog.id !== null) {
       try {

@@ -6,25 +6,24 @@ import { useAuth } from '@/app/AuthContext';
 import { FiMail, FiLock } from 'react-icons/fi';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
   const { refreshAuth } = useAuth();
-
 
   const handleLogin = async () => {
     const res = await fetch('http://localhost:8080/feedspotclone/login.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ username: email, password }),
+      body: JSON.stringify({ username, password }),
     });
 
     const data = await res.json();
     if (res.ok && data.success) {
-  await refreshAuth(); // re-check authentication
-  router.push('/widgets');
-} else {
+      await refreshAuth(); // re-check authentication
+      router.push('/widgets');
+    } else {
       alert('❌ Login failed: ' + data.error);
     }
   };
@@ -32,27 +31,24 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-5xl bg-white rounded-2xl overflow-hidden shadow-lg flex flex-col md:flex-row">
-        
+
         {/* Left: Form */}
         <div className="w-full md:w-1/2 p-10">
-       
 
           {/* Title */}
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Log in to your Account</h2>
           <p className="text-sm text-gray-500 mb-6">Welcome back! Select method to log in:</p>
 
-          
-
-          {/* Email Input */}
+          {/* Username Input (labeled Email for UI only) */}
           <div className="relative mb-4">
             <span className="absolute left-3 top-3.5 text-gray-400">
               <FiMail />
             </span>
             <input
-              type="email"
+              type="text"
               placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600"
             />
           </div>
@@ -90,7 +86,7 @@ export default function LoginPage() {
 
           <p className="text-sm text-center mt-4">
             Don’t have an account?{' '}
-            <span onClick={() => router.push('/signup')} className="text-cyan-700hover:underline cursor-pointer">
+            <span onClick={() => router.push('/signup')} className="text-cyan-700 hover:underline cursor-pointer">
               Create an account
             </span>
           </p>
