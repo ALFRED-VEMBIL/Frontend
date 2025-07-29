@@ -1,6 +1,6 @@
 // LearnMoreModal.js
 const LearnMoreModal = ({ setIsOpen }) => (
-  <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50 z-50">
+  <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-white/80 bg-opacity-50 z-50">
     <div className="bg-neutral-200 p-4 rounded shadow max-w-xl w-full">
       <iframe
         src="https://www.youtube.com/embed/ea-ybXtsOCc?start=112"

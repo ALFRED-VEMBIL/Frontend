@@ -55,7 +55,7 @@ const [textAlign, setTextAlign] = useState("left");
 const [borderEnabled, setBorderEnabled] = useState(true);
 
 const [borderColor, setBorderColor] = useState('#0e7490');
-const [cornerStyle, setCornerStyle] = useState('Square'); // 'rounded' or 'square'
+const [cornerStyle, setCornerStyle] = useState('Square'); 
 
 const [padding, setPadding] = useState(10);
 const [spacing, setSpacing] = useState(10);
