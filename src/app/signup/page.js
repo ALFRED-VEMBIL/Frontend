@@ -1,34 +1,45 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiMail, FiLock } from 'react-icons/fi';
+import { FiMail, FiLock, FiUser } from 'react-icons/fi';
 
 export default function SignupPage() {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
   const handleSignup = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    if (password.length < 6) {
+      alert('Password should be at least 6 characters long.');
+      return;
+    }
+
     const res = await fetch('http://localhost:8080/feedspotclone/signup.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, email, password }),
     });
 
     const data = await res.json();
     if (data.success) {
-      alert(' Signup successful. Please log in.');
+      alert('Signup successful. Please log in.');
       router.push('/login');
     } else {
-      alert(' Signup failed: ' + data.error);
+      alert('Signup failed: ' + data.error);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-5xl bg-white rounded-2xl overflow-hidden shadow-lg flex flex-col md:flex-row">
-
         {/* Left: Form */}
         <div className="w-full md:w-1/2 p-10">
           <div className="mb-8">
@@ -38,6 +49,20 @@ export default function SignupPage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Create your Account</h2>
           <p className="text-sm text-gray-500 mb-6">Start your journey with us today!</p>
 
+          {/* Username Input */}
+          <div className="relative mb-4">
+            <span className="absolute left-3 top-3.5 text-gray-400">
+              <FiUser />
+            </span>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
+
           {/* Email Input */}
           <div className="relative mb-4">
             <span className="absolute left-3 top-3.5 text-gray-400">
@@ -46,8 +71,8 @@ export default function SignupPage() {
             <input
               type="email"
               placeholder="Email"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
